@@ -12,6 +12,7 @@ public protocol NetworkConnectivity {
     func isNetworkReachable() -> Bool
 }
 
+@available(iOS 12.0, *)
 public class NetworkMonitor: NetworkConnectivity {
     enum NetworkStatus {
         case connected, notConnected

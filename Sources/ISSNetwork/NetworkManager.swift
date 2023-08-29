@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 
+@available(iOS 13.0, *)
 public protocol Requestable {
     @available(iOS, deprecated: 16.2, message: "Please use the `send(_ request:)` method")
     func request<T: Codable>(_ req: NetworkRequest) -> AnyPublisher<T, APIError>
@@ -20,7 +21,7 @@ public class NetworkManager: Requestable {
     private let networkMonitor: NetworkConnectivity
     private let session: URLSession
 
-    public required init(monitor: NetworkConnectivity = NetworkGateway.createNetworkMonitor(), session: URLSession = URLSession.shared) {
+    public required init(monitor: NetworkConnectivity = ISSNetworkGateway.createNetworkMonitor(), session: URLSession = URLSession.shared) {
         networkMonitor = monitor
         self.session = session
     }
