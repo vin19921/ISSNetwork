@@ -7,7 +7,7 @@
 
 import Network
 
-class NetworkMonitorTest {
+public final class NetworkMonitorTest {
     private var monitor: NWPathMonitor
     private var queue: DispatchQueue
     
