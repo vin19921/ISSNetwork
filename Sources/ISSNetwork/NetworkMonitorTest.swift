@@ -12,14 +12,14 @@ public final class NetworkMonitorTest: ObservableObject {
     private var monitor: NWPathMonitor
     private var queue: DispatchQueue
     
-    @Published var isInternetAvailable = false
+    @Published public var isInternetAvailable = false
 
     public init() {
         monitor = NWPathMonitor()
         queue = DispatchQueue(label: "NetworkMonitorTest")
     }
 
-    func startMonitoring() {
+    public func startMonitoring() {
         monitor.start(queue: queue)
         monitor.pathUpdateHandler = { path in
             DispatchQueue.main.async {
@@ -28,7 +28,7 @@ public final class NetworkMonitorTest: ObservableObject {
         }
     }
 
-    func stopMonitoring() {
+    public func stopMonitoring() {
         monitor.cancel()
     }
 }
