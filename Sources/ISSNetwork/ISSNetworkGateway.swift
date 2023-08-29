@@ -7,8 +7,14 @@
 
 import Foundation
 
+//public enum ISSNetworkGateway {
+//    public static func createNetworkMonitor() -> NetworkMonitor {
+//        NetworkMonitor.sharedNetworkMonitor
+//    }
+//}
+
 public enum ISSNetworkGateway {
-    public static func createNetworkMonitor() -> NetworkMonitor {
-        NetworkMonitor.sharedNetworkMonitor
+    public static func createNetworkMonitor() -> NetworkMonitorTest {
+        NetworkMonitorTest.init()
     }
 }
