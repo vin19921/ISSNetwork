@@ -59,6 +59,7 @@ public class NetworkMonitor: NetworkConnectivity {
             }
 
             self.currentStatus = currentStatus
+            print("Network Status ::: \(self.currentStatus)")
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: Notification.Name(Constants.kNetworkReachabilityChange),
                                                 object: self,
