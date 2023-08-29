@@ -14,7 +14,7 @@ public final class NetworkMonitorTest: ObservableObject {
     
     @Published var isInternetAvailable = false
 
-    init() {
+    public init() {
         monitor = NWPathMonitor()
         queue = DispatchQueue(label: "NetworkMonitorTest")
     }
