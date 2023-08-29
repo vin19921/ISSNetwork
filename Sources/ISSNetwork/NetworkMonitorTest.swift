@@ -14,6 +14,10 @@ public final class NetworkMonitorTest: ObservableObject {
     
     @Published var isInternetAvailable = false
 
+    public var internetStatus: Bool {
+        isInternetAvailable
+    }
+
     public init() {
         monitor = NWPathMonitor()
         queue = DispatchQueue(label: "NetworkMonitorTest")
@@ -30,10 +34,6 @@ public final class NetworkMonitorTest: ObservableObject {
 
     public func stopMonitoring() {
         monitor.cancel()
-    }
-    
-    public func isInternetAvailable() -> Bool {
-        isInternetAvailable
     }
 }
 
