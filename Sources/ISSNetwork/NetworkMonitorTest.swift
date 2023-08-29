@@ -5,9 +5,10 @@
 //  Created by Wing Seng Chew on 29/08/2023.
 //
 
+import Combine
 import Network
 
-public final class NetworkMonitorTest {
+public final class NetworkMonitorTest: ObservableObject {
     private var monitor: NWPathMonitor
     private var queue: DispatchQueue
     
