@@ -9,7 +9,7 @@ import Combine
 import Network
 
 public final class NetworkMonitorTest: ObservableObject {
-    private var monitor: NWPathMonitor
+    private var monitor: NWPathMonitor?
     private var queue: DispatchQueue
     
     @Published var isInternetAvailable = false
