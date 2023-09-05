@@ -60,28 +60,29 @@ final class NetworkMonitorTest: ObservableObject {
 
     private let nwMonitor = NWPathMonitor()
     private let workerQueue = DispatchQueue.global()
-    
-    public init() {
-        nwMonitor.start(queue: workerQueue)
+
+    init() {
         nwMonitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
-                self.isConnected = path.status == .satisfied
-                self.isCellular = path.usesInterfaceType(.cellular)
+                self?.isConnected = path.status == .satisfied
+                self?.isCellular = path.usesInterfaceType(.cellular)
+                // Optionally, you can update isInternetAvailable based on your logic.
+                // For example, you can check if isConnected and isCellular meet your criteria.
+                self?.isInternetAvailable = self?.checkInternetAvailability() ?? false
             }
         }
+        nwMonitor.start(queue: workerQueue)
     }
-    
+
     public func stop() {
         nwMonitor.cancel()
     }
 
-    public func checkConnection() {
-        nwMonitor.pathUpdateHandler = { path in
-            DispatchQueue.main.async {
-                self.isConnected = path.status == .satisfied
-                self.isCellular = path.usesInterfaceType(.cellular)
-            }
-        }
-        nwMonitor.start(queue: workerQueue)
+    // This function can be called to check internet availability based on your criteria.
+    private func checkInternetAvailability() -> Bool {
+        // Implement your logic to determine internet availability here.
+        // For example, you can check if isConnected and isCellular meet your criteria.
+        return isConnected && !isCellular
     }
 }
+
