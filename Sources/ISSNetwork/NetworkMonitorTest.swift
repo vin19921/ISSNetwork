@@ -21,6 +21,7 @@ public final class NetworkMonitorTest: ObservableObject {
     public init() {
         monitor = NWPathMonitor()
         queue = DispatchQueue(label: "NetworkMonitorTest")
+        startMonitoring()
     }
 
     public func startMonitoring() {
