@@ -65,8 +65,8 @@ final class NetworkMonitorTest: ObservableObject {
         nwMonitor.start(queue: workerQueue)
         nwMonitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
-                self?.isConnected = path.status == .satisfied
-                self?.isCellular = path.usesInterfaceType(.cellular)
+                self.isConnected = path.status == .satisfied
+                self.isCellular = path.usesInterfaceType(.cellular)
             }
         }
     }
@@ -78,8 +78,8 @@ final class NetworkMonitorTest: ObservableObject {
     public func checkConnection() {
         nwMonitor.pathUpdateHandler = { path in
             DispatchQueue.main.async {
-                self?.isConnected = path.status == .satisfied
-                self?.isCellular = path.usesInterfaceType(.cellular)
+                self.isConnected = path.status == .satisfied
+                self.isCellular = path.usesInterfaceType(.cellular)
             }
         }
         nwMonitor.start(queue: workerQueue)
