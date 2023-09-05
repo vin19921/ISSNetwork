@@ -61,7 +61,7 @@ final class NetworkMonitorTest: ObservableObject {
     private let nwMonitor = NWPathMonitor()
     private let workerQueue = DispatchQueue.global()
     
-    public func start() {
+    public init() {
         nwMonitor.start(queue: workerQueue)
         nwMonitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
@@ -73,5 +73,15 @@ final class NetworkMonitorTest: ObservableObject {
     
     public func stop() {
         nwMonitor.cancel()
+    }
+
+    public func checkConnection() {
+        nwMonitor.pathUpdateHandler = { path in
+            DispatchQueue.main.async {
+                self?.isConnected = path.status == .satisfied
+                self?.isCellular = path.usesInterfaceType(.cellular)
+            }
+        }
+        nwMonitor.start(queue: workerQueue)
     }
 }
