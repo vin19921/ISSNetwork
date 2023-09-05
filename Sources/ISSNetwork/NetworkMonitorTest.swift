@@ -27,8 +27,8 @@ public final class NetworkMonitorTest: ObservableObject {
     }
 
     public func startMonitoring() {
-        monitor.start(queue: queue)
-        monitor.pathUpdateHandler = { path in
+        monitor?.start(queue: queue)
+        monitor?.pathUpdateHandler = { path in
             DispatchQueue.main.async {
                 self.isInternetAvailable = path.status == .satisfied
             }
@@ -36,7 +36,7 @@ public final class NetworkMonitorTest: ObservableObject {
     }
 
     public func stopMonitoring() {
-        monitor.cancel()
+        monitor?.cancel()
     }
 
     public func retryConnection() {
