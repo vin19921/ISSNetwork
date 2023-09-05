@@ -80,10 +80,11 @@ public class NetworkMonitor: NetworkConnectivity {
     }
 
     public func isNetworkReachable() -> Bool {
-        if currentStatus != .satisfied {
-            monitorNetworkChange()
-        }
-        return currentStatus == .satisfied
+//        if currentStatus != .satisfied {
+//            monitorNetworkChange()
+//        }
+//        return currentStatus == .satisfied
+        currentStatus == .satisfied
     }
 }
 
