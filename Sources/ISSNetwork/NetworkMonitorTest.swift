@@ -19,7 +19,9 @@ public final class NetworkMonitorTest: ObservableObject {
     }
 
     public init() {
-        monitor = NWPathMonitor()
+        if monitor == nil {
+            monitor = NWPathMonitor()
+        }
         queue = DispatchQueue(label: "NetworkMonitorTest")
         startMonitoring()
     }
@@ -35,6 +37,16 @@ public final class NetworkMonitorTest: ObservableObject {
 
     public func stopMonitoring() {
         monitor.cancel()
+    }
+
+    public func retryConnection() {
+        if monitor == nil {
+            monitor = NWPathMonitor()
+        }
+        if !isInternetAvailable {
+            queue = DispatchQueue(label: "NetworkMonitorTest")
+            startMonitoring()
+        }
     }
 }
 
