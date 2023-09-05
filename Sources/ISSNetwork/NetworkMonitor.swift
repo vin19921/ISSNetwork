@@ -1,8 +1,8 @@
 //
-//  File.swift
+//  NetworkMonitor.swift
 //  
 //
-//  Created by Wing Seng Chew on 29/08/2023.
+//  Copyright by iSoftStone 2023.
 //
 
 import Network
@@ -80,10 +80,6 @@ public class NetworkMonitor: NetworkConnectivity {
     }
 
     public func isNetworkReachable() -> Bool {
-//        if currentStatus != .satisfied {
-//            monitorNetworkChange()
-//        }
-//        return currentStatus == .satisfied
         currentStatus == .satisfied
     }
 }

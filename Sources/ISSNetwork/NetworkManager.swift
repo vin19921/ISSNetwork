@@ -1,8 +1,8 @@
 //
-//  File.swift
+//  NetworkManager.swift
 //  
 //
-//  Created by Wing Seng Chew on 29/08/2023.
+//  Copyright by iSoftStone 2023.
 //
 
 import Combine
