@@ -49,7 +49,7 @@ import Network
 //    }
 //}
 
-final class NetworkMonitorTest: ObservableObject {
+public final class NetworkMonitorTest: ObservableObject {
     @Published private(set) var isConnected = false
     @Published private(set) var isCellular = false
     @Published var isInternetAvailable = false
@@ -61,7 +61,7 @@ final class NetworkMonitorTest: ObservableObject {
     private let nwMonitor = NWPathMonitor()
     private let workerQueue = DispatchQueue.global()
 
-    init() {
+    public init() {
         nwMonitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
                 self?.isConnected = path.status == .satisfied
