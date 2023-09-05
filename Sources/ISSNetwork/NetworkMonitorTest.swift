@@ -64,7 +64,7 @@ public final class NetworkMonitorTest: ObservableObject {
     public init() {
         nwMonitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
-                self.isInternetAvailable = path.status == .satisfied
+                self?.isInternetAvailable = path.status == .satisfied
 //                self?.isCellular = path.usesInterfaceType(.cellular)
             }
         }
@@ -82,13 +82,13 @@ public final class NetworkMonitorTest: ObservableObject {
             retryConnection()
         }
         
-        return isConnected
+        return internetStatus
     }
 
     private func retryConnection() {
         nwMonitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
-                self.isInternetAvailable = path.status == .satisfied
+                self?.isInternetAvailable = path.status == .satisfied
 //                self?.isCellular = path.usesInterfaceType(.cellular)
             }
         }
