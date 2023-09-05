@@ -22,11 +22,14 @@ public final class NetworkMonitorTest: ObservableObject {
         if monitor == nil {
             monitor = NWPathMonitor()
         }
-        queue = DispatchQueue(label: "NetworkMonitorTest")
         startMonitoring()
     }
 
     public func startMonitoring() {
+        if monitor == nil {
+            monitor = NWPathMonitor()
+        }
+        queue = DispatchQueue(label: "NetworkMonitorTest")
         monitor?.start(queue: queue)
         monitor?.pathUpdateHandler = { path in
             DispatchQueue.main.async {
