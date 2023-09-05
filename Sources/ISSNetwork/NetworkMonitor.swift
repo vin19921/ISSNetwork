@@ -42,7 +42,9 @@ public class NetworkMonitor: NetworkConnectivity {
     private init() {}
 
     public func monitorNetworkChange() {
-        monitor = NWPathMonitor()
+        if monitor == nil {
+            monitor = NWPathMonitor()
+        }
         let queue = DispatchQueue(label: Constants.networkMonitorLabel)
 
         monitor?.start(queue: queue)
@@ -78,7 +80,10 @@ public class NetworkMonitor: NetworkConnectivity {
     }
 
     public func isNetworkReachable() -> Bool {
-        currentStatus == .satisfied
+        if currentStatus != .satisfied {
+            monitorNetworkChange()
+        }
+        return currentStatus == .satisfied
     }
 }
 
