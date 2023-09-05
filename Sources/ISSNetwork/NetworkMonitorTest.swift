@@ -85,12 +85,11 @@ public final class NetworkMonitorTest: ObservableObject {
         return isConnected
     }
 
-    private func retryConnection() -> Bool? {
+    private func retryConnection() {
         nwMonitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
                 self?.isConnected = path.status == .satisfied
                 self?.isCellular = path.usesInterfaceType(.cellular)
-                return self?.isConnected
             }
         }
         nwMonitor.start(queue: workerQueue)
