@@ -74,7 +74,7 @@ public extension Encodable {
 //        self.value = value
 //    }
 //}
-public struct RequestBody: Encodable {
+public struct RequestBody {
     public let keyValues: [(key: String, value: String)]
 
     public init(keyValues: [(key: String, value: String)]) {
