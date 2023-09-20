@@ -64,3 +64,8 @@ public extension Encodable {
         try? JSONEncoder().encode(self)
     }
 }
+
+public struct RequestBody: Encodable {
+    let key: String
+    let value: String
+}
