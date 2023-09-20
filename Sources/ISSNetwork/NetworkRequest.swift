@@ -66,6 +66,11 @@ public extension Encodable {
 }
 
 public struct RequestBody: Encodable {
-    public let key: String
-    public let value: String
+    let key: String
+    let value: String
+
+    public init(key: String, value: String) {
+        self.key = key
+        self.value = value
+    }
 }
