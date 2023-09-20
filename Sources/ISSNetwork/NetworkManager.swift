@@ -49,6 +49,14 @@ public class NetworkManager: Requestable {
                     let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
                     throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
                 }
+
+                // Convert the data to a JSON string for printing
+                if let jsonString = String(data: output.data, encoding: .utf8) {
+                    print("JSON Response:\n\(jsonString)")
+                } else {
+                    print("Unable to convert data to JSON string.")
+                }
+
                 return output.data
             }
             .decode(type: T.self, decoder: JSONDecoder())
