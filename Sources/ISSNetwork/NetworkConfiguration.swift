@@ -40,9 +40,9 @@ public struct NetworkConfiguration {
         public var httpMethod: HTTPMethod {
             switch self {
             case .register:
-                return .post
+                return .POST
             case .getUser:
-                return .get
+                return .GET
             }
         }
     }
