@@ -20,6 +20,7 @@ public protocol Requestable {
 public class NetworkManager: Requestable {
     private let networkMonitor: NetworkConnectivity
     private let session: URLSession
+    private let baseURL: String = NetworkConfiguration.environment.baseURL
 
     public required init(monitor: NetworkConnectivity = ISSNetworkGateway.createNetworkMonitor(), session: URLSession = URLSession.shared) {
         networkMonitor = monitor
@@ -32,7 +33,7 @@ public class NetworkManager: Requestable {
         if !networkMonitor.isNetworkReachable() {
             return AnyPublisher(Fail<T, APIError>(error: APIError.internetError("Please check you network connection and try again")))
         }
-        guard let url = URL(string: req.url) else {
+        guard let url = URL(string: baseURL + req.url) else {
             // Return a fail publisher if the url is invalid
             return AnyPublisher(Fail<T, APIError>(error: APIError.badURL("Invalid Url")))
         }
