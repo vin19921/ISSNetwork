@@ -26,12 +26,15 @@ public struct NetworkConfiguration {
 
     public enum APIEndpoint {
         case register
+        case getOTP
         case getUser(userID: Int)
 
         public var path: String {
             switch self {
             case .register:
                 return "/user/register"
+            case .getOTP:
+                return "/user/otp"
             case .getUser(let userID):
                 return "/user/\(userID)"
             }
@@ -41,6 +44,8 @@ public struct NetworkConfiguration {
             switch self {
             case .register:
                 return .POST
+            case .getOTP:
+                return .GET
             case .getUser:
                 return .GET
             }
