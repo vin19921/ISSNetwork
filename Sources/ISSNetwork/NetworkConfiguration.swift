@@ -45,7 +45,7 @@ public struct NetworkConfiguration {
             case .register:
                 return .POST
             case .getOTP:
-                return .GET
+                return .POST
             case .getUser:
                 return .GET
             }
