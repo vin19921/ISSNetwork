@@ -27,6 +27,7 @@ public struct NetworkConfiguration {
     public enum APIEndpoint {
         case register
         case getOTP
+        case validateOTP
         case getUser(userID: Int)
 
         public var path: String {
@@ -35,6 +36,8 @@ public struct NetworkConfiguration {
                 return "/user/register"
             case .getOTP:
                 return "/user/otp"
+            case .validateOTP:
+                return "/user/validateOtp"
             case .getUser(let userID):
                 return "/user/\(userID)"
             }
@@ -45,6 +48,8 @@ public struct NetworkConfiguration {
             case .register:
                 return .POST
             case .getOTP:
+                return .POST
+            case .validateOTP:
                 return .POST
             case .getUser:
                 return .GET
