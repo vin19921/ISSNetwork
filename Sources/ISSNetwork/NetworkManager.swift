@@ -58,6 +58,12 @@ public class NetworkManager: Requestable {
                     print("Unable to convert data to JSON string.")
                 }
 
+                guard let data = output.data else {
+                    let resultCode = output.resultCode ?? "0"
+                    let resultMessage = output.resultMessage ?? "resultMessage isEmpty"
+                    throw APIError.dataError(code: resultCode, error: resultMessage)
+                }
+
                 return output.data
             }
             .decode(type: T.self, decoder: JSONDecoder())
