@@ -51,13 +51,16 @@ public class NetworkManager: Requestable {
                     throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
                 }
 
-                if let response = try JSONDecoder().decode(StandardResponse.self, from: output.data) {
+                do {
+                    let response = try JSONDecoder().decode(StandardResponse.self, from: output.data)
 
                     if response.resultCode == 1 {
                         throw APIError.serverError(code: response.resultCode, error: response.resultMessage)
                     } else {
                         print("ResultCode is not 1.")
                     }
+                } catch {
+                    print("Error decoding JSON: \(error)")
                 }
 
                 return output.data
