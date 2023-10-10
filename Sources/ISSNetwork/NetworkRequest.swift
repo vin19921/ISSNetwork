@@ -81,3 +81,9 @@ public struct RequestBody {
         self.keyValues = keyValues
     }
 }
+
+public struct StandardResponse: Decodable {
+    public let resultCode: Int
+    public let resultMessage: String
+    public let data: [String: Any]
+}

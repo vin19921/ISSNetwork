@@ -53,16 +53,16 @@ public class NetworkManager: Requestable {
 
                 // Convert the data to a JSON string for printing
                 if let jsonData = String(data: output.data, encoding: .utf8) {
-                    if let response = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
-                        print("JSON Response:\n\(jsonData)")
-                        
-                        if let resultCode = response["resultCode"] as? Int,
-                           let resultMessage = response["resultMessage"] as? String {
-                            if resultCode == 1 {
-                                throw APIError.serverError(code: response.resultCode, error: response.resultMessage)
-                            } else {
-                                print("ResultCode is not 1.")
-                            }
+                    print("JSON Response:\n\(jsonData)")
+                    if jsonData.isEmpty {
+                        // jsonData is empty
+                        print("JSON Data is empty.")
+                        let response = try JSONDecoder().decode(StandardResponse.self, from: jsonData)
+
+                        if response.resultCode == 1 {
+                            throw APIError.serverError(code: response.resultCode, error: response.resultMessage)
+                        } else {
+                            print("ResultCode is not 1.")
                         }
                     }
                 } else {
