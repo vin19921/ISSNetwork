@@ -85,20 +85,17 @@ public struct RequestBody {
 public struct StandardResponse: Decodable {
     public let resultCode: Int
     public let resultMessage: String
-    public let data: [String: Any]
 
     // Provide a custom implementation of the Decodable initializer
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         resultCode = try container.decode(Int.self, forKey: .resultCode)
         resultMessage = try container.decode(String.self, forKey: .resultMessage)
-        data = try container.decode([String: Any].self, forKey: .data)
     }
 
     // Define CodingKeys to map JSON keys to struct properties
     private enum CodingKeys: String, CodingKey {
         case resultCode
         case resultMessage
-        case data
     }
 }
