@@ -54,6 +54,15 @@ public class NetworkManager: Requestable {
                 // Convert the data to a JSON string for printing
                 if let jsonString = String(data: output.data, encoding: .utf8) {
                     print("JSON Response:\n\(jsonString)")
+
+                    let response = try JSONDecoder().decode(T.self, from: jsonString)
+
+                    // Check if the resultCode is 1
+                    if response.resultCode == 1 {
+                        // Return the JSON string
+                        print("JSON Response:\n\(jsonString)")
+                        throw APIError.serverError(code: response.resultCode, error: response.resultMessage)
+                    }
                 } else {
                     print("Unable to convert data to JSON string.")
                 }
@@ -68,25 +77,6 @@ public class NetworkManager: Requestable {
                 // return error if json decoding fails
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
             }
-            .sink(
-                receiveCompletion: { completion in
-                    switch completion {
-                    case .finished:
-                        break
-                    case .failure(let error):
-                        print("Error: \(error)")
-                    }
-                },
-                receiveValue: { response in
-                    // Check if the resultCode is equal to 1
-                    if response.resultCode == 1 {
-                        print("receiveValue Response:\n\(response)")
-                        return APIError.serverError(String(describing: response.resultCode), error: response.resultMessage)
-                    } else {
-                        print("ResultCode is not 1.")
-                    }
-                }
-            )
             .eraseToAnyPublisher()
     }
 }
