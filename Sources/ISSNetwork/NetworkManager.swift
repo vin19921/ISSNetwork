@@ -57,11 +57,15 @@ public class NetworkManager: Requestable {
 
                     let response = try JSONDecoder().decode(T.self, from: output.data)
 
-                    // Check if the resultCode is 1
-                    if response.resultCode == 1 {
-                        // Return the JSON string
-                        print("JSON Response:\n\(jsonString)")
-                        throw APIError.serverError(code: response.resultCode, error: response.resultMessage)
+                    if let resultCode = response["resultCode"] as? Int,
+                       let resultMessage = response["resultMessage"] as? String {
+                        // Check if resultCode is 1
+                        if resultCode == 1 {
+                            print("JSON Response:\n\(jsonString)")
+                            throw APIError.serverError(code: response.resultCode, error: response.resultMessage)
+                        } else {
+                            print("ResultCode is not 1.")
+                        }
                     }
                 } else {
                     print("Unable to convert data to JSON string.")
