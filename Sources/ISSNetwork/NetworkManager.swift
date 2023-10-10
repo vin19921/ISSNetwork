@@ -51,22 +51,13 @@ public class NetworkManager: Requestable {
                     throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
                 }
 
-                // Convert the data to a JSON string for printing
-                if let jsonData = String(data: output.data, encoding: .utf8) {
-                    print("JSON Response:\n\(jsonData)")
-                    if jsonData.isEmpty {
-                        // jsonData is empty
-                        print("JSON Data is empty.")
-                        let response = try JSONDecoder().decode(StandardResponse.self, from: output.data)
+                if let response = try JSONDecoder().decode(StandardResponse.self, from: output.data) {
 
-                        if response.resultCode == 1 {
-                            throw APIError.serverError(code: response.resultCode, error: response.resultMessage)
-                        } else {
-                            print("ResultCode is not 1.")
-                        }
+                    if response.resultCode == 1 {
+                        throw APIError.serverError(code: response.resultCode, error: response.resultMessage)
+                    } else {
+                        print("ResultCode is not 1.")
                     }
-                } else {
-                    print("Unable to convert data to JSON string.")
                 }
 
                 return output.data
