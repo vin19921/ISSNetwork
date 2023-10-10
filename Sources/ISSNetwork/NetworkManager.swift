@@ -52,10 +52,8 @@ public class NetworkManager: Requestable {
                 }
 
                 // Convert the data to a JSON string for printing
-                if let jsonString = String(data: output.data, encoding: .utf8) {
-                    print("JSON Response:\n\(jsonString)")
-
-                    let response = try JSONDecoder().decode(T.self, from: output.data)
+                if let jsonData = String(data: output.data, encoding: .utf8),
+                   let response = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
 
                     if let resultCode = response["resultCode"] as? Int,
                        let resultMessage = response["resultMessage"] as? String {
