@@ -55,7 +55,7 @@ public class NetworkManager: Requestable {
                 if let jsonString = String(data: output.data, encoding: .utf8) {
                     print("JSON Response:\n\(jsonString)")
 
-                    let response = try JSONDecoder().decode(T.self, from: jsonString)
+                    let response = try JSONDecoder().decode(T.self, from: output.data)
 
                     // Check if the resultCode is 1
                     if response.resultCode == 1 {
