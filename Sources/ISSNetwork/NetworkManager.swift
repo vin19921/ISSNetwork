@@ -80,7 +80,7 @@ public class NetworkManager: Requestable {
                 receiveValue: { response in
                     // Check if the resultCode is equal to 1
                     if response.resultCode == 1 {
-                        print("JSON Response:\n\(jsonString)")
+                        print("receiveValue Response:\n\(response)")
                         return APIError.serverError(String(describing: response.resultCode), error: response.resultMessage)
                     } else {
                         print("ResultCode is not 1.")
