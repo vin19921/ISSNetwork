@@ -68,6 +68,25 @@ public class NetworkManager: Requestable {
                 // return error if json decoding fails
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
             }
+            .sink(
+                receiveCompletion: { completion in
+                    switch completion {
+                    case .finished:
+                        break
+                    case .failure(let error):
+                        print("Error: \(error)")
+                    }
+                },
+                receiveValue: { response in
+                    // Check if the resultCode is equal to 1
+                    if response.resultCode == 1 {
+                        print("JSON Response:\n\(jsonString)")
+                        return APIError.serverError(String(describing: response.resultCode), error: response.resultMessage)
+                    } else {
+                        print("ResultCode is not 1.")
+                    }
+                }
+            )
             .eraseToAnyPublisher()
     }
 }
