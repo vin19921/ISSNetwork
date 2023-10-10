@@ -83,13 +83,13 @@ public struct RequestBody {
 }
 
 public struct StandardResponse: Codable {
-    public let resultCode: Int16
+    public let resultCode: Int
     public let resultMessage: String
 
     // Provide a custom implementation of the Decodable initializer
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        resultCode = try container.decode(Int16.self, forKey: .resultCode)
+        resultCode = try container.decode(Int.self, forKey: .resultCode)
         resultMessage = try container.decode(String.self, forKey: .resultMessage)
     }
 
