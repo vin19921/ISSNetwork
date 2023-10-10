@@ -54,12 +54,11 @@ public class NetworkManager: Requestable {
                 // Convert the data to a JSON string for printing
                 if let jsonData = String(data: output.data, encoding: .utf8),
                    let response = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
+                    print("JSON Response:\n\(jsonData)")
 
                     if let resultCode = response["resultCode"] as? Int,
                        let resultMessage = response["resultMessage"] as? String {
-                        // Check if resultCode is 1
                         if resultCode == 1 {
-                            print("JSON Response:\n\(jsonString)")
                             throw APIError.serverError(code: response.resultCode, error: response.resultMessage)
                         } else {
                             print("ResultCode is not 1.")
