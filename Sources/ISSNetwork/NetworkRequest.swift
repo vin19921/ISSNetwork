@@ -41,6 +41,14 @@ public struct NetworkRequest {
             }
         }
         urlRequest.setValue(Constants.applicationJSON, forHTTPHeaderField: Constants.contentType)
+
+        // To remove when production
+        if let allHeaders = urlRequest.allHTTPHeaderFields {
+            for (field, value) in allHeaders {
+                print("\(field): \(value)")
+            }
+        }
+
         return urlRequest
     }
 }
