@@ -64,7 +64,7 @@ public class NetworkManager: Requestable {
                 // throw an error if response is nil
                 guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
                     let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
-                    print("Error ::: \(code)")
+                    print("Error ::: \(code), Response ::: \(response)")
                     throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
                 }
 
