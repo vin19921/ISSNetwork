@@ -45,6 +45,21 @@ public class NetworkManager: Requestable {
         return URLSession.shared
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
+                if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
+                     // Use flatMap to handle token refresh asynchronously
+//                     return refreshAccessToken()
+//                         .tryMap { newAccessToken in
+//                             // After refreshing the token, retry the request with the updated token
+//                             var updatedRequest = req.buildURLRequest(with: url)
+//                             // Update the Authorization header with the new access token
+//                             updatedRequest.setValue("Bearer \(newAccessToken)", forHTTPHeaderField: "Authorization")
+//
+//                             // Retry the request with the updated token
+//                             return fetchURLResponse(urlRequest: updatedRequest)
+//                         }
+//                         .eraseToAnyPublisher()
+                    print("Token Expired ::: \(response.statusCode)")
+                 }
                 // throw an error if response is nil
                 guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
                     let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
@@ -76,6 +91,29 @@ public class NetworkManager: Requestable {
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
             }
             .eraseToAnyPublisher()
+    }
+
+    func refreshAccessToken() -> AnyPublisher<String, APIError> {
+        // Simulate an asynchronous token refresh process
+        return Future { promise in
+            // Add your actual token refresh logic here, such as making a network request
+            // and getting the new token.
+            
+            // For the sake of the example, we'll simulate a successful refresh.
+            DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+                // Replace this with your actual refreshed token
+                let newToken = "newAccessToken123"
+                promise(.success(newToken))
+            }
+            
+            // In case of an error, you can use promise(.failure(error)) to send an error.
+            // Replace the simulation with your actual error handling.
+        }
+        .mapError { error in
+            // If there's an error during the token refresh, map it to APIError
+            return APIError.invalidJSON(String(describing: error.localizedDescription))
+        }
+        .eraseToAnyPublisher()
     }
 }
 
