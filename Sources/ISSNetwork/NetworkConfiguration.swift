@@ -68,7 +68,7 @@ public struct NetworkConfiguration {
             case .login:
                 return .POST
             case .viewProfile:
-                return .GET
+                return .POST
             case .refreshToken:
                 return .POST
             case .getUser:
