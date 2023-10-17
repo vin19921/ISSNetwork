@@ -47,7 +47,7 @@ public struct NetworkConfiguration {
             case .login:
                 return "/auth/login"
             case .viewProfile:
-                return "/auth/profile"
+                return "/user/profile"
             case .refreshToken:
                 return "/auth/refreshToken"
             case .getUser(let userID):
