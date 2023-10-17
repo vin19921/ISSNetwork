@@ -45,6 +45,11 @@ public struct NetworkRequest {
     }
 }
 
+public enum Header: String {
+    case Bearer
+}
+
+
 public enum HTTPMethod: String {
     case GET
     case POST
