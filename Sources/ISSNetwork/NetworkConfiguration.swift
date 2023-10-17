@@ -70,7 +70,7 @@ public struct NetworkConfiguration {
             case .viewProfile:
                 return .GET
             case .refreshToken:
-                return .GET
+                return .POST
             case .getUser:
                 return .GET
             }
