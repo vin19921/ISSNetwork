@@ -93,28 +93,28 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-    func refreshAccessToken() -> AnyPublisher<String, APIError> {
-        // Simulate an asynchronous token refresh process
-        return Future { promise in
-            // Add your actual token refresh logic here, such as making a network request
-            // and getting the new token.
-            
-            // For the sake of the example, we'll simulate a successful refresh.
-            DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
-                // Replace this with your actual refreshed token
-                let newToken = "newAccessToken123"
-                promise(.success(newToken))
-            }
-            
-            // In case of an error, you can use promise(.failure(error)) to send an error.
-            // Replace the simulation with your actual error handling.
-        }
-        .mapError { error in
-            // If there's an error during the token refresh, map it to APIError
-            return APIError.invalidJSON(String(describing: error.localizedDescription))
-        }
-        .eraseToAnyPublisher()
-    }
+//    func refreshAccessToken() -> AnyPublisher<String, APIError> {
+//        // Simulate an asynchronous token refresh process
+//        return Future { promise in
+//            // Add your actual token refresh logic here, such as making a network request
+//            // and getting the new token.
+//
+//            // For the sake of the example, we'll simulate a successful refresh.
+//            DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+//                // Replace this with your actual refreshed token
+//                let newToken = "newAccessToken123"
+//                promise(.success(newToken))
+//            }
+//
+//            // In case of an error, you can use promise(.failure(error)) to send an error.
+//            // Replace the simulation with your actual error handling.
+//        }
+//        .mapError { error in
+//            // If there's an error during the token refresh, map it to APIError
+//            return APIError.invalidJSON(String(describing: error.localizedDescription))
+//        }
+//        .eraseToAnyPublisher()
+//    }
 }
 
 public extension NetworkManager {
