@@ -95,12 +95,12 @@ public class NetworkManager: Requestable {
             .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
-//                    switch apiError {
-//                    case let .authenticationError(code, description):
-//                        return APIError.authenticationError(code: code, error: description)
-//                    default:
+                    switch apiError {
+                    case let .authenticationError(code, description):
+                        return APIError.authenticationError(code: code, error: description)
+                    default:
                         return apiError
-//                    }
+                    }
                 }
                 // return error if json decoding fails
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
