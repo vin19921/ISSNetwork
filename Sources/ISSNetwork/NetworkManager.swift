@@ -104,42 +104,42 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-    func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
-        // Implement the token refresh logic here and return the new access token as a RefreshTokenResponse.
-        // You can use a separate network request to refresh the token.
-
-//        let refreshTokenURL = URL(string: "Your refresh token endpoint URL")!
-//        var refreshTokenRequest = URLRequest(url: refreshTokenURL)
-//        refreshTokenRequest.httpMethod = "POST"
-        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
-                                     headers: ["x-access-token": "\(String(describing: accessToken))"],
-                                     httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
-
-        // Customize the refresh token request as needed, e.g., add headers, body, etc.
-
-        return URLSession.shared.dataTaskPublisher(for: request)
-            .tryMap { output in
-                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
-                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
-                    throw APIError.serverError(code: code, error: "Token refresh request failed.")
-                }
-
-                do {
-                    let decoder = JSONDecoder()
-                    let refreshTokenResponse = try decoder.decode(RefreshTokenResponse.self, from: output.data)
-                    return refreshTokenResponse
-                } catch {
-                    throw APIError.invalidJSON(String(describing: error.localizedDescription))
-                }
-            }
-            .mapError { error in
-                if let apiError = error as? APIError {
-                    return apiError
-                }
-                return APIError.networkError("Network request failed: \(error.localizedDescription)")
-            }
-            .eraseToAnyPublisher()
-    }
+//    func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
+//        // Implement the token refresh logic here and return the new access token as a RefreshTokenResponse.
+//        // You can use a separate network request to refresh the token.
+//
+////        let refreshTokenURL = URL(string: "Your refresh token endpoint URL")!
+////        var refreshTokenRequest = URLRequest(url: refreshTokenURL)
+////        refreshTokenRequest.httpMethod = "POST"
+//        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
+//                                     headers: ["x-access-token": "\(String(describing: accessToken))"],
+//                                     httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
+//
+//        // Customize the refresh token request as needed, e.g., add headers, body, etc.
+//
+//        return URLSession.shared.dataTaskPublisher(for: request)
+//            .tryMap { output in
+//                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
+//                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
+//                    throw APIError.serverError(code: code, error: "Token refresh request failed.")
+//                }
+//
+//                do {
+//                    let decoder = JSONDecoder()
+//                    let refreshTokenResponse = try decoder.decode(RefreshTokenResponse.self, from: output.data)
+//                    return refreshTokenResponse
+//                } catch {
+//                    throw APIError.invalidJSON(String(describing: error.localizedDescription))
+//                }
+//            }
+//            .mapError { error in
+//                if let apiError = error as? APIError {
+//                    return apiError
+//                }
+//                return APIError.networkError("Network request failed: \(error.localizedDescription)")
+//            }
+//            .eraseToAnyPublisher()
+//    }
 
 //    func refreshAccessToken() -> AnyPublisher<String, APIError> {
 //        // Simulate an asynchronous token refresh process
