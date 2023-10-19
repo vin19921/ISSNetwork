@@ -48,18 +48,32 @@ public class NetworkManager: Requestable {
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
                      // Use flatMap to handle token refresh asynchronously
-//                     return refreshAccessToken()
-//                         .tryMap { newAccessToken in
-//                             // After refreshing the token, retry the request with the updated token
-//                             var updatedRequest = req.buildURLRequest(with: url)
-//                             // Update the Authorization header with the new access token
-//                             updatedRequest.setValue("Bearer \(newAccessToken)", forHTTPHeaderField: "Authorization")
-//
-//                             // Retry the request with the updated token
-//                             return fetchURLResponse(urlRequest: updatedRequest)
-//                         }
-//                         .eraseToAnyPublisher()
                     print("Token Expired ::: \(response.statusCode)")
+                    let refreshTokenService = RefreshTokenService()
+                    return refreshTokenService.fetchRefreshToken()
+                         .tryMap { newAccessToken in
+                             // After refreshing the token, retry the request with the updated token
+//                             var updatedRequest = req.buildURLRequest(with: url)
+                             // Update the Authorization header with the new access token
+//                             urlRequest.setValue("\(String(describing: newAccessToken))", forHTTPHeaderField: "x-access-token")
+                             print("newAccessToken ::: \(newAccessToken)")
+                             // Retry the request with the updated token
+//                             return fetchURLResponse(urlRequest: updatedRequest)
+                         }
+                         .eraseToAnyPublisher()
+//                    return makeRefreshToken()
+                    
+//                    let refreshTokenService = RefreshTokenService()
+//                    refreshTokenService.fetchRefreshToken()
+//                        .sink(receiveCompletion: { completion in
+//                            if case .failure(let error) = completion {
+//                                promise(.failure(error))
+//                            }
+//                        }, receiveValue: { response in
+//                            promise(.success(response))
+//                        })
+//                        .store(in: &self.cancellables)
+
                  }
                 // throw an error if response is nil
                 guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
@@ -117,6 +131,39 @@ public class NetworkManager: Requestable {
 //            return APIError.invalidJSON(String(describing: error.localizedDescription))
 //        }
 //        .eraseToAnyPublisher()
+//    }
+
+    func makeRefreshToken() -> AnyPublisher<String, Error> {
+        return Future<String, Error> { [weak self] promise in
+            guard let self = self else { return promise(.failure("CommonServiceError.emptyData")) }
+
+//            print("isNetworkReachable ::: \(AppCoreService.networkMonitor.isNetworkReachable())")
+//            guard AppCoreService.networkMonitor.isNetworkReachable() else {
+//                return promise(.failure("CommonServiceError.internetFailure"))
+//            }
+
+            self.refreshTokenRequest()
+                .sink(receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        promise(.failure(error))
+                    }
+                }, receiveValue: { response in
+                    promise(.success(response))
+                })
+                .store(in: &self.cancellables)
+        }
+        .eraseToAnyPublisher()
+    }
+//
+//    private func refreshTokenRequest() -> AnyPublisher<String, Error> {
+//        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
+////                                     reqBody: request,
+//                                     httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
+//        let sentRequest: AnyPublisher<LoginResponse, APIError> = networkRequest.request(request)
+//
+//        return sentRequest
+//            .mapError { $0 as Error }
+//            .eraseToAnyPublisher()
 //    }
 }
 
