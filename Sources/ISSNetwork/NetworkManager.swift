@@ -96,8 +96,8 @@ public class NetworkManager: Requestable {
             .mapError { error in
                 if let apiError = error as? APIError {
                     switch apiError {
-                    case let APIError.authenticationError(code, error):
-                        return APIError.authenticationError(code: code, error: String(describing: error.localizedDescription))
+                    case let .authenticationError(code, description):
+                        return .authenticationError(code: code, error: description)
                     default:
                         return apiError
                     }
