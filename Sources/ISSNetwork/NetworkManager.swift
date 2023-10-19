@@ -74,7 +74,7 @@ public class NetworkManager: Requestable {
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
                      // Use flatMap to handle token refresh asynchronously
                     print("Token Expired ::: \(response.statusCode)")
-                    throw APIError.authenticationError(code: response.statusCode, error: "Token Expired.")
+                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
                  }
                 // throw an error if response is nil
                 guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
@@ -97,8 +97,7 @@ public class NetworkManager: Requestable {
                 if let apiError = error as? APIError {
                     switch apiError {
                     case let .authenticationError(code, description):
-//                        return .authenticationError(code: code, error: description)
-                        return APIError.authenticationError(code: code, error: String(describing: apiError.localizedDescription))
+                        return APIError.authenticationError(code: code, error: description)
                     default:
                         return apiError
                     }
