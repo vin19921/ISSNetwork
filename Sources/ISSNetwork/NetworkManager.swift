@@ -95,7 +95,7 @@ public class NetworkManager: Requestable {
             .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
-                    switch apiError.localizedDescription {
+                    switch apiError {
                     case APIError.authenticationError(let code, let error):
                         return APIError.authenticationError(code: code, error: error.localizedDescription)
                     default:
