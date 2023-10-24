@@ -362,7 +362,7 @@ public class NetworkManager: Requestable {
                 var requestWithNewAccessToken = urlRequest
                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
 
-                return requestWithNewToken(urlRequest: requestWithNewAccessToken)
+                return requestWithNewToken(urlRequest)
 //                return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
 //                    .tryMap { newOutput in
 //                        return newOutput.data
