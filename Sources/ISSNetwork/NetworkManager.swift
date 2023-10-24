@@ -51,13 +51,20 @@ public class NetworkManager: Requestable {
                      // Use flatMap to handle token refresh asynchronously
                     print("Token Expired ::: \(response.statusCode)")
                     self.fetchRefreshTokenRequest()
+                        .mapError { error in
+                            // Transform the error to APIError.refreshTokenError here.
+                            return APIError.refreshTokenError("APIError.refreshTokenError")
+                        }
                         .sink(receiveCompletion: { completion in
-                            if case .failure(let error) = completion {
-                                print("Refresh Token Failure")
-                                throw APIError.refreshTokenError("APIError.refreshTokenError")
+                            switch completion {
+                            case .finished:
+                                break // No error to handle in this case.
+                            case .failure(let error):
+                                print("Refresh Token Failure: \(error)")
+                                // Handle the error here if needed, but don't throw it.
                             }
                         }, receiveValue: { response in
-                            print("Refresh Token Success\(response.data.appToken)")
+                            print("Refresh Token Success \(response.data.appToken)")
                         })
                         .store(in: &self.cancellables)
 //                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
