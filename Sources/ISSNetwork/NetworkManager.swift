@@ -100,38 +100,38 @@ public class NetworkManager: Requestable {
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-                    // Use flatMap to conditionally handle token refresh asynchronously
+                    // Use map to conditionally handle token refresh asynchronously
                     print("Token Expired ::: \(response.statusCode)")
                     return Just(())
-                        .flatMap { _ -> AnyPublisher<T, APIError> in
+                        .map { _ in
                             self.fetchRefreshTokenRequest()
-                                .flatMap { refreshTokenResponse in
-                                    if let appToken = refreshTokenResponse.data.token.appToken {
-                                        // Update the headers with the new appToken
-                                        var requestWithNewAccessToken = urlRequest
-                                        requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-
-                                        // Recall fetchURLResponse with the updated request
-                                        return URLSession.shared
-                                            .dataTaskPublisher(for: requestWithNewAccessToken)
-                                            .tryMap { output in
-                                                return output.data
-                                            }
-                                            .decode(type: T.self, decoder: JSONDecoder())
-                                            .mapError { error in
-                                                if let apiError = error as? APIError {
-                                                    return apiError
-                                                }
-                                                return APIError.invalidJSON(String(describing: error.localizedDescription))
-                                            }
-                                            .eraseToAnyPublisher()
-                                    } else {
-                                        // Handle the absence of the appToken
-                                        return Fail(error: APIError.refreshTokenError("Missing appToken"))
-                                            .eraseToAnyPublisher()
-                                    }
-                                }
                         }
+                        .tryMap { refreshTokenResponse in
+                            if let appToken = refreshTokenResponse.data.token.appToken {
+                                // Update the headers with the new appToken
+                                var requestWithNewAccessToken = urlRequest
+                                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+
+                                return URLSession.shared
+                                    .dataTaskPublisher(for: requestWithNewAccessToken)
+                                    .tryMap { output in
+                                        return output.data
+                                    }
+                                    .decode(type: T.self, decoder: JSONDecoder())
+                                    .mapError { error in
+                                        if let apiError = error as? APIError {
+                                            return apiError
+                                        }
+                                        return APIError.invalidJSON(String(describing: error.localizedDescription))
+                                    }
+                                    .eraseToAnyPublisher()
+                            } else {
+                                // Handle the absence of the appToken
+                                return Fail(error: APIError.refreshTokenError("Missing appToken"))
+                                    .eraseToAnyPublisher()
+                            }
+                        }
+                        .switchToLatest()
                         .eraseToAnyPublisher()
                 }
                 // Continue with the subsequent steps when the response status code is not 401.
