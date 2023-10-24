@@ -100,8 +100,7 @@ public class NetworkManager: Requestable {
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-                    // Handle token refresh and subsequent request when authentication error occurs
-                    return try self.handleTokenRefreshAndRequest(urlRequest)
+                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
                 }
                 // Continue with the subsequent steps when the response status code is not 401.
                 return output.data
@@ -112,6 +111,10 @@ public class NetworkManager: Requestable {
                     return apiError
                 }
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
+            }
+            .flatMap { _ in
+                // Handle token refresh and make the subsequent request
+                return self.handleTokenRefreshAndRequest(urlRequest)
             }
             .eraseToAnyPublisher()
     }
@@ -130,7 +133,19 @@ public class NetworkManager: Requestable {
                 }
             }
             .flatMap { updatedRequest in
-                return self.fetchURLResponse(urlRequest: updatedRequest)
+                return URLSession.shared
+                    .dataTaskPublisher(for: updatedRequest)
+                    .tryMap { output in
+                        return output.data
+                    }
+                    .decode(type: T.self, decoder: JSONDecoder())
+                    .mapError { error in
+                        if let apiError = error as? APIError {
+                            return apiError
+                        }
+                        return APIError.invalidJSON(String(describing: error.localizedDescription))
+                    }
+                    .eraseToAnyPublisher()
             }
             .eraseToAnyPublisher()
     }
