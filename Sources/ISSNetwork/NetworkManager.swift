@@ -163,7 +163,7 @@ public class NetworkManager: Requestable {
         // We use the dataTaskPublisher from the URLSession which gives us a publisher to play around with.
         let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") ?? ""
-        req.allHTTPHeaderFields?.updateValue(accessToken, forKey: "x-access-token")
+        req.headers?.updateValue(accessToken, forKey: "x-access-token")
 
         return fetchURLResponse(urlRequest: req.buildURLRequest(with: url))
     }
