@@ -56,6 +56,20 @@ public class NetworkManager: Requestable {
         return fetchRefreshTokenURLResponse(urlRequest: req.buildURLRequest(with: url))
     }
 
+    public func requestWithNewToken<T>(_ urlRequest: URLRequest) -> AnyPublisher<T, APIError>
+        where T: Decodable, T: Encodable
+    {
+        if !networkMonitor.isNetworkReachable() {
+            return AnyPublisher(Fail<T, APIError>(error: APIError.internetError("Please check you network connection and try again")))
+        }
+        guard let url = URL(string: baseURL + req.url) else {
+            // Return a fail publisher if the url is invalid
+            return AnyPublisher(Fail<T, APIError>(error: APIError.badURL("Invalid Url")))
+        }
+        // We use the dataTaskPublisher from the URLSession which gives us a publisher to play around with.
+        return fetchURLResponse(urlRequest: urlRequest)
+    }
+
     func fetchRefreshTokenURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         print("Request ::: \(urlRequest)")
         return URLSession.shared
@@ -348,7 +362,7 @@ public class NetworkManager: Requestable {
                 var requestWithNewAccessToken = urlRequest
                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
 
-                return fetchURLResponse(urlRequest: requestWithNewAccessToken)
+                return requestWithNewToken(urlRequest: requestWithNewAccessToken)
 //                return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
 //                    .tryMap { newOutput in
 //                        return newOutput.data
