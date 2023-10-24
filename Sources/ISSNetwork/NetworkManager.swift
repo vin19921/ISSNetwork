@@ -176,20 +176,20 @@ public class NetworkManager: Requestable {
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
                                 
                                 self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
-//                                    .sink(receiveCompletion: { completion in
-//                                        switch completion {
-//                                        case .finished:
-//                                            // Handle successful completion
-//                                            break
-//                                        case .failure(let error):
-//                                            // Handle the error here
-//                                            print("API Request Failure: \(error)")
-//                                        }
-//                                    }, receiveValue: { response in
-//                                        // Handle the successful response here
-//                                        print("API Request Success: \(response)")
-//                                    })
-//                                    .store(in: &cancellables)
+                                    .sink(receiveCompletion: { completion in
+                                        switch completion {
+                                        case .finished:
+                                            // Handle successful completion
+                                            break
+                                        case .failure(let error):
+                                            // Handle the error here
+                                            print("API Request Failure: \(error)")
+                                        }
+                                    }, receiveValue: {  (response: T) in
+                                        // Handle the successful response here
+                                        print("API Request Success: \(response)")
+                                    })
+                                    .store(in: &cancellables)
 
 
                             } else {
