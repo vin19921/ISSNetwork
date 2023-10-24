@@ -202,33 +202,33 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-    func requestRefreshToken(_ request: NetworkRequest) -> AnyPublisher<RefreshTokenResponse, APIError> {
-        return URLSession.shared.dataTaskPublisher(for: request.buildURLRequest(with: request))
-            .mapError { error in
-                // Map URLSession errors to APIError
-                return APIError.refreshTokenError("Refresh Token Error")
-            }
-            .flatMap { data, response in
-                if let httpResponse = response as? HTTPURLResponse, (200 ..< 300) ~= httpResponse.statusCode {
-                    // If the response status code is in the success range, decode the response
-                    do {
-                        let decodedResponse = try JSONDecoder().decode(RefreshTokenResponse.self, from: data)
-                        return Just(decodedResponse)
-                            .setFailureType(to: APIError.self)
-                            .eraseToAnyPublisher()
-                    } catch {
-                        return Fail(error: APIError.invalidJSON(String(describing: error.localizedDescription)))
-                            .eraseToAnyPublisher()
-                    }
-                } else {
-                    // If the response status code is not in the success range, create an APIError
-                    let code = (response as? HTTPURLResponse)?.statusCode ?? 0
-                    return Fail(error: APIError.serverError(code: code, error: "Server error"))
-                        .eraseToAnyPublisher()
-                }
-            }
-            .eraseToAnyPublisher()
-    }
+//    func requestRefreshToken(_ request: NetworkRequest) -> AnyPublisher<RefreshTokenResponse, APIError> {
+//        return URLSession.shared.dataTaskPublisher(for: request.buildURLRequest(with: request))
+//            .mapError { error in
+//                // Map URLSession errors to APIError
+//                return APIError.refreshTokenError("Refresh Token Error")
+//            }
+//            .flatMap { data, response in
+//                if let httpResponse = response as? HTTPURLResponse, (200 ..< 300) ~= httpResponse.statusCode {
+//                    // If the response status code is in the success range, decode the response
+//                    do {
+//                        let decodedResponse = try JSONDecoder().decode(RefreshTokenResponse.self, from: data)
+//                        return Just(decodedResponse)
+//                            .setFailureType(to: APIError.self)
+//                            .eraseToAnyPublisher()
+//                    } catch {
+//                        return Fail(error: APIError.invalidJSON(String(describing: error.localizedDescription)))
+//                            .eraseToAnyPublisher()
+//                    }
+//                } else {
+//                    // If the response status code is not in the success range, create an APIError
+//                    let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+//                    return Fail(error: APIError.serverError(code: code, error: "Server error"))
+//                        .eraseToAnyPublisher()
+//                }
+//            }
+//            .eraseToAnyPublisher()
+//    }
 
 }
 
