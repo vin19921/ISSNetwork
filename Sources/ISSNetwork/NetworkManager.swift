@@ -77,7 +77,7 @@ public class NetworkManager: Requestable {
                             .sink(receiveCompletion: { completion in
                                 if case .failure(let error) = completion {
                                     print("Refresh Token Failure")
-                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+                                    return APIError.serverError(code: code, error: "Something went wrong, please try again later.")
                                 }
                             }, receiveValue: { response in
                                 print("Refresh Token Success\(response.data.appToken)")
