@@ -64,7 +64,7 @@ public class NetworkManager: Requestable {
                         })
                         .store(in: &self.cancellables)
 
-//                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
+                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
                  }
                 // throw an error if response is nil
                 guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
