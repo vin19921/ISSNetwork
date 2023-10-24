@@ -78,7 +78,7 @@ public class NetworkManager: Requestable {
 //    }
 
     func fetchRefreshTokenURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
-        
+        print("Request ::: \(urlRequest)")
         return URLSession.shared
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
