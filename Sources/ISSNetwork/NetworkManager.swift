@@ -191,7 +191,10 @@ public class NetworkManager: Requestable {
 //    }
 
     func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
+        let accessToken = UserDefaults.standard.object(forKey: "accessToken")
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken")
+        print("accessToken : \(accessToken)")
+        print("refreshToken : \(refreshToken)")
         let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
                                      headers: ["x-access-token": "\(String(describing: refreshToken))"],
                                      httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
