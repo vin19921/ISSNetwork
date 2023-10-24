@@ -88,24 +88,24 @@ public class NetworkManager: Requestable {
             .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
-                    switch apiError {
-                    case let .authenticationError(code, description):
-                        self.fetchRefreshTokenRequest()
-                            .mapError { error in
-                                // Transform the error to APIError.refreshTokenError here.
-                                return APIError.refreshTokenError("APIError.refreshTokenError")
-                            }
-                            .sink(receiveCompletion: { completion in
-                                if case .failure(let error) = completion {
-                                    print("Refresh Token Failure")
-                                }
-                            }, receiveValue: { response in
-                                print("Refresh Token Success\(response.data.appToken)")
-                            })
-                            .store(in: &self.cancellables)
-                    default:
+//                    switch apiError {
+//                    case let .authenticationError(code, description):
+//                        self.fetchRefreshTokenRequest()
+//                            .mapError { error in
+//                                // Transform the error to APIError.refreshTokenError here.
+//                                return APIError.refreshTokenError("APIError.refreshTokenError")
+//                            }
+//                            .sink(receiveCompletion: { completion in
+//                                if case .failure(let error) = completion {
+//                                    print("Refresh Token Failure")
+//                                }
+//                            }, receiveValue: { response in
+//                                print("Refresh Token Success\(response.data.appToken)")
+//                            })
+//                            .store(in: &self.cancellables)
+//                    default:
                         return apiError
-                    }
+//                    }
                 }
                 // return error if json decoding fails
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
