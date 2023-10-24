@@ -160,7 +160,7 @@ public class NetworkManager: Requestable {
                             
                             return newRequestPublisher
                         }
-                        .switchToLatest()
+//                        .switchToLatest()
 
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
