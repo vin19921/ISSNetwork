@@ -119,8 +119,13 @@ public class NetworkManager: Requestable {
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
 
 //                                let updatedRequestPublisher: AnyPublisher<T, APIError> = self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
-
-                                return self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
+//                                let sentRequest: AnyPublisher<T, APIError> = self.request(request, newAppToken: true)
+//
+//                                return sentRequest
+//                                    .mapError { $0 as Error }
+//                                    .eraseToAnyPublisher()
+                                return self.fetchURLResponse(urlRequest: urlRequest.updateHeaders(["x-access-token": "\(appToken)"])
+)
                             } else {
                                 // Handle the absence of the appToken
                                 return Fail(error: APIError.refreshTokenError("Missing appToken"))

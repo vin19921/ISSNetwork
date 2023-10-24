@@ -114,3 +114,11 @@ public struct StandardResponse: Codable {
         case resultMessage
     }
 }
+
+extension URLRequest {
+    mutating func updateHeaders(_ newHeaders: [String: String]) {
+        for (field, value) in newHeaders {
+            self.setValue(value, forHTTPHeaderField: field)
+        }
+    }
+}
