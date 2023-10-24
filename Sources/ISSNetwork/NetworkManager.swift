@@ -68,22 +68,23 @@ public class NetworkManager: Requestable {
                         })
                         .store(in: &self.cancellables)
 //                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
-                 }
-                // throw an error if response is nil
-                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
-                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
-                    throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
+                } else {
+                    // throw an error if response is nil
+                    guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
+                        let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
+                        throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
+                    }
+                    
+                    do {
+                        let jsonData = String(data: output.data, encoding: .utf8)
+                        print("jsonResponse ::: \n\(jsonData)")
+                        
+                    } catch {
+                        print("Error decoding JSON: \(error)")
+                    }
+                    
+                    return output.data
                 }
-
-                do {
-                    let jsonData = String(data: output.data, encoding: .utf8)
-                    print("jsonResponse ::: \n\(jsonData)")
-
-                } catch {
-                    print("Error decoding JSON: \(error)")
-                }
-
-                return output.data
             }
             .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
