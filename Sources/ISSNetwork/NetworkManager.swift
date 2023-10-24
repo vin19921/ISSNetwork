@@ -42,6 +42,20 @@ public class NetworkManager: Requestable {
         return fetchURLResponse(urlRequest: req.buildURLRequest(with: url))
     }
 
+    public func requestRefreshToken<T>(_ req: NetworkRequest) -> AnyPublisher<T, APIError>
+        where T: Decodable, T: Encodable
+    {
+        if !networkMonitor.isNetworkReachable() {
+            return AnyPublisher(Fail<T, APIError>(error: APIError.internetError("Please check you network connection and try again")))
+        }
+        guard let url = URL(string: baseURL + req.url) else {
+            // Return a fail publisher if the url is invalid
+            return AnyPublisher(Fail<T, APIError>(error: APIError.badURL("Invalid Url")))
+        }
+        // We use the dataTaskPublisher from the URLSession which gives us a publisher to play around with.
+        return fetchRefreshTokenURLResponse(urlRequest: req.buildURLRequest(with: url))
+    }
+
     func fetchURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         print("Request ::: \(urlRequest)")
         
@@ -51,30 +65,6 @@ public class NetworkManager: Requestable {
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
                     // Use flatMap to conditionally handle token refresh asynchronously
                     print("Token Expired ::: \(response.statusCode)")
-                    return self.fetchRefreshTokenRequest()
-                        .mapError { error in
-                            return APIError.refreshTokenError("APIError.refreshTokenError")
-                        }
-                        .tryMap { refreshTokenResponse in
-                            // Token refresh is successful, continue with the original request
-//                            var requestWithNewAccessToken = urlRequest
-//                            let newAccessToken = refreshTokenResponse.data.appToken ?? ""
-//                            requestWithNewAccessToken.addValue(newAccessToken, forHTTPHeaderField: "x-access-token")
-//                            return URLSession.shared
-//                                .dataTaskPublisher(for: requestWithNewAccessToken)
-//                                .tryMap { output in
-//                                    return output.data
-//                                }
-//                                .decode(type: T.self, decoder: JSONDecoder())
-//                                .mapError { error in
-//                                    if let apiError = error as? APIError {
-//                                        return apiError
-//                                    }
-//                                    // Return an error if JSON decoding fails
-//                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
-//                                }
-//                                .replaceError(with: T.self) // Replace decoding error with a default value
-                        }
                 }
                 // Continue with the subsequent steps when the response status code is not 401.
                 guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
@@ -82,78 +72,103 @@ public class NetworkManager: Requestable {
                     throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
                 }
 
-                return Just(output.data)
+                return output.data
             }
-            .switchToLatest()
             .eraseToAnyPublisher()
     }
 
-//    func fetchURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
-//        print("Request ::: \(urlRequest)")
-//        return URLSession.shared
-//            .dataTaskPublisher(for: urlRequest)
-//            .tryMap { output in
-//                if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-//                     // Use flatMap to handle token refresh asynchronously
-//                    print("Token Expired ::: \(response.statusCode)")
-//                    self.fetchRefreshTokenRequest()
-//                        .mapError { error in
-//                            return APIError.refreshTokenError("APIError.refreshTokenError")
-//                        }
-//                        .sink(receiveCompletion: { completion in
-//                            switch completion {
-//                            case .finished:
-//                                break // No error to handle in this case.
-//                            case .failure(let error):
-//                                print("Refresh Token Failure: \(error)")
+    func fetchRefreshTokenURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+        
+        return URLSession.shared
+            .dataTaskPublisher(for: urlRequest)
+            .tryMap { output in
+                if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
+                     // Use flatMap to handle token refresh asynchronously
+                    print("Token Failed ::: \(response.statusCode)")
+                    throw APIError.refreshTokenError("Refresh Token Error")
+                 }
+
+                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
+                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
+                    throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
+                }
+
+                do {
+                    let jsonData = String(data: output.data, encoding: .utf8)
+                    print("jsonResponse ::: \n\(jsonData)")
+
+                } catch {
+                    print("Error decoding JSON: \(error)")
+                }
+
+                return output.data
+            }
+            .decode(type: T.self, decoder: JSONDecoder())
+            .mapError { error in
+                if let apiError = error as? APIError {
+                    return apiError
+                }
+                // return error if json decoding fails
+                return APIError.invalidJSON(String(describing: error.localizedDescription))
+            }
+            .eraseToAnyPublisher()
+    }
+
+    func fetchURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+        print("Request ::: \(urlRequest)")
+        return URLSession.shared
+            .dataTaskPublisher(for: urlRequest)
+            .tryMap { output in
+                if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
+                     // Use flatMap to handle token refresh asynchronously
+                    return Just(())
+                        .flatMap { _ -> AnyPublisher<T, APIError> in
+                            return self.fetchRefreshTokenURLResponse(urlRequest: urlRequest)
+                        }
+                        .eraseToAnyPublisher()
+                 }
+                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
+                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
+                    throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
+                }
+
+                do {
+                    let jsonData = String(data: output.data, encoding: .utf8)
+                    print("jsonResponse ::: \n\(jsonData)")
+
+                } catch {
+                    print("Error decoding JSON: \(error)")
+                }
+
+                return output.data
+            }
+            .decode(type: T.self, decoder: JSONDecoder())
+            .mapError { error in
+                if let apiError = error as? APIError {
+//                    switch apiError {
+//                    case let .authenticationError(code, description):
+//                        self.fetchRefreshTokenRequest()
+//                            .mapError { error in
+//                                // Transform the error to APIError.refreshTokenError here.
+//                                return APIError.refreshTokenError("APIError.refreshTokenError")
 //                            }
-//                        }, receiveValue: { response in
-//                            print("Refresh Token Success \(response.data.appToken)")
-//                        })
-//                        .store(in: &self.cancellables)
-//                 }
-//                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
-//                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
-//                    throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
-//                }
-//
-//                do {
-//                    let jsonData = String(data: output.data, encoding: .utf8)
-//                    print("jsonResponse ::: \n\(jsonData)")
-//
-//                } catch {
-//                    print("Error decoding JSON: \(error)")
-//                }
-//
-//                return output.data
-//            }
-//            .decode(type: T.self, decoder: JSONDecoder())
-//            .mapError { error in
-//                if let apiError = error as? APIError {
-////                    switch apiError {
-////                    case let .authenticationError(code, description):
-////                        self.fetchRefreshTokenRequest()
-////                            .mapError { error in
-////                                // Transform the error to APIError.refreshTokenError here.
-////                                return APIError.refreshTokenError("APIError.refreshTokenError")
-////                            }
-////                            .sink(receiveCompletion: { completion in
-////                                if case .failure(let error) = completion {
-////                                    print("Refresh Token Failure")
-////                                }
-////                            }, receiveValue: { response in
-////                                print("Refresh Token Success\(response.data.appToken)")
-////                            })
-////                            .store(in: &self.cancellables)
-////                    default:
-//                        return apiError
-////                    }
-//                }
-//                // return error if json decoding fails
-//                return APIError.invalidJSON(String(describing: error.localizedDescription))
-//            }
-//            .eraseToAnyPublisher()
-//    }
+//                            .sink(receiveCompletion: { completion in
+//                                if case .failure(let error) = completion {
+//                                    print("Refresh Token Failure")
+//                                }
+//                            }, receiveValue: { response in
+//                                print("Refresh Token Success\(response.data.appToken)")
+//                            })
+//                            .store(in: &self.cancellables)
+//                    default:
+                        return apiError
+//                    }
+                }
+                // return error if json decoding fails
+                return APIError.invalidJSON(String(describing: error.localizedDescription))
+            }
+            .eraseToAnyPublisher()
+    }
 
 //    func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
 //        // Assuming you have a refresh token and authentication server endpoint.
@@ -188,7 +203,7 @@ public class NetworkManager: Requestable {
         let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
                                      headers: ["x-access-token": "\(String(describing: refreshToken))"],
                                      httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
-        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = self.request(request)
+        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = self.requestRefreshToken(request)
 
         return sentRequest
             .mapError { $0 as Error }
