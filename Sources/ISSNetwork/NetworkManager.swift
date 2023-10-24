@@ -132,7 +132,7 @@ public class NetworkManager: Requestable {
                                         }
                                         return APIError.invalidJSON(String(describing: error.localizedDescription))
                                     }
-                                    .eraseToAnyPublisher()
+//                                    .eraseToAnyPublisher()
                                 
                             } else {
                                 // Handle the absence of the appToken
