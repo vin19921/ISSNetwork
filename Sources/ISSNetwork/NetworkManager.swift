@@ -51,37 +51,36 @@ public class NetworkManager: Requestable {
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
                     // Use flatMap to conditionally handle token refresh asynchronously
                     print("Token Expired ::: \(response.statusCode)")
-                    return Just(())
-                        .flatMap { _ -> AnyPublisher<T, APIError> in
-                            return self.fetchRefreshTokenRequest()
-                                .mapError { error in
-                                    return APIError.refreshTokenError("APIError.refreshTokenError")
-                                }
-                                .flatMap { refreshTokenResponse in
-                                    // Token refresh is successful, continue with the original request
-                                    var requestWithNewAccessToken = urlRequest
-                                    requestWithNewAccessToken.addValue(refreshTokenResponse.data.appToken, forHTTPHeaderField: "x-access-token")
-                                    
-                                    // Recursively call fetchURLResponse with the updated request
-                                    return self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
-                                }
-                                .eraseToAnyPublisher()
+                    return self.fetchRefreshTokenRequest()
+                        .mapError { error in
+                            return APIError.refreshTokenError("APIError.refreshTokenError")
                         }
-                        .eraseToAnyPublisher()
+                        .flatMap { refreshTokenResponse in
+                            // Token refresh is successful, continue with the original request
+                            var requestWithNewAccessToken = urlRequest
+                            let newAccessToken = refreshTokenResponse.data.appToken ?? ""
+                            requestWithNewAccessToken.addValue(newAccessToken, forHTTPHeaderField: "x-access-token")
+                            return URLSession.shared
+                                .dataTaskPublisher(for: requestWithNewAccessToken)
+                                .tryMap { output in
+                                    return output.data
+                                }
+                                .decode(type: T.self, decoder: JSONDecoder())
+                                .mapError { error in
+                                    if let apiError = error as? APIError {
+                                        return apiError
+                                    }
+                                    // Return an error if JSON decoding fails
+                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+                                }
+                        }
                 }
                 // Continue with the subsequent steps when the response status code is not 401.
                 return Just(output.data)
                     .setFailureType(to: APIError.self)
                     .eraseToAnyPublisher()
             }
-            .decode(type: T.self, decoder: JSONDecoder())
-            .mapError { error in
-                if let apiError = error as? APIError {
-                    return apiError
-                }
-                // Return an error if JSON decoding fails
-                return APIError.invalidJSON(String(describing: error.localizedDescription))
-            }
+            .switchToLatest() // Flatten the nested publisher
             .eraseToAnyPublisher()
     }
 
