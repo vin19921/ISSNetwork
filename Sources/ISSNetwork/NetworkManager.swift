@@ -112,11 +112,13 @@ public class NetworkManager: Requestable {
                         }, receiveValue: { response in
                             // Handle the successful response here
                             print("Refresh Token Success: \(response)")
-                            UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
-                            UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
-                            var requestWithNewAccessToken = urlRequest
-                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(response.data.token.appToken, forKey: "accessToken")
-                            return fetchURLResponse(urlRequest: requestWithNewAccessToken)
+                            if let appToken = response.data.token.appToken {
+                                UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
+                                UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
+                                var requestWithNewAccessToken = urlRequest
+                                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+                                return fetchURLResponse(urlRequest: requestWithNewAccessToken)
+                            }
                         })
                         .store(in: &self.cancellables)
                  }
