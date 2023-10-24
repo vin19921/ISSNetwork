@@ -62,10 +62,10 @@ public class NetworkManager: Requestable {
         if !networkMonitor.isNetworkReachable() {
             return AnyPublisher(Fail<T, APIError>(error: APIError.internetError("Please check you network connection and try again")))
         }
-        guard let url = URL(string: baseURL + req.url) else {
-            // Return a fail publisher if the url is invalid
-            return AnyPublisher(Fail<T, APIError>(error: APIError.badURL("Invalid Url")))
-        }
+//        guard let url = URL(string: baseURL + req.url) else {
+//            // Return a fail publisher if the url is invalid
+//            return AnyPublisher(Fail<T, APIError>(error: APIError.badURL("Invalid Url")))
+//        }
         // We use the dataTaskPublisher from the URLSession which gives us a publisher to play around with.
         return fetchURLResponse(urlRequest: urlRequest)
     }
@@ -322,7 +322,7 @@ public class NetworkManager: Requestable {
 //            .eraseToAnyPublisher()
 //    }
 
-    func fetchRefreshTokenRequest(urlRequest: URLRequest) -> AnyPublisher<RefreshTokenResponse, Error> {
+    func fetchRefreshTokenRequest<T>(urlRequest: URLRequest) -> AnyPublisher<T, Error> {
         let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") ?? ""
         print("accessToken : \(accessToken)")
@@ -330,7 +330,7 @@ public class NetworkManager: Requestable {
         let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
                                      headers: ["x-access-token": "\(refreshToken)"],
                                      httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
-        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = self.requestRefreshToken(request)
+        let sentRequest: AnyPublisher<T, APIError> = self.requestRefreshToken(request)
 
         return sentRequest
             .mapError { $0 as Error }
