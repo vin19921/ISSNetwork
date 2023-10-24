@@ -114,30 +114,28 @@ public class NetworkManager: Requestable {
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-                    return fetchRefreshTokenRequest(urlRequest: urlRequest)
-//                        .mapError { $0 as Error }
-//                        .tryMap { refreshTokenResponse in
-//                            guard let appToken = refreshTokenResponse.data.token.appToken else {
-//                                throw APIError.refreshTokenError("Missing appToken")
-//                            }
-//
-//                            var requestWithNewAccessToken = urlRequest
-//                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-//
-//                            return fetchURLResponse(urlRequest: requestWithNewAccessToken)
-////                            URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
-////                                .tryMap { newOutput in
-////                                    return newOutput.data
-////                                }
-////                                .decode(type: T.self, decoder: JSONDecoder())
-////                                .mapError { error in
-////                                    if let apiError = error as? APIError {
-////                                        return apiError
-////                                    }
-////                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
-////                                }
-//                        }
-//                        .eraseToAnyPublisher()
+                    self.fetchRefreshTokenRequest(urlRequest: urlRequest)
+                        .sink(receiveCompletion: { completion in
+                            switch completion {
+                            case .finished:
+                                break // No error to handle in this case.
+                            case .failure(let error):
+                                // Handle the error here
+                                print("Refresh Token Failure: \(error)")
+                            }
+                        }, receiveValue: { response in
+                            // Handle the successful response here
+                            print("Refresh Token Success: \(response)")
+                            if let appToken = response.data.token.appToken {
+                                UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
+                                UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
+                                return fetchWithNewToken(urlRequest: urlRequest)
+                            } else {
+                                // Handle the absence of the appToken
+                                throw APIError.refreshTokenError("Refresh Token Error")
+                            }
+                        })
+                        .store(in: &self.cancellables)
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
                     return output.data
@@ -324,25 +322,7 @@ public class NetworkManager: Requestable {
 //            .eraseToAnyPublisher()
 //    }
 
-//    public func requestWithNewToken<T>(_ req: NetworkRequest) -> AnyPublisher<T, APIError>
-//        where T: Decodable, T: Encodable
-//    {
-//        if !networkMonitor.isNetworkReachable() {
-//            return AnyPublisher(Fail<T, APIError>(error: APIError.internetError("Please check you network connection and try again")))
-//        }
-//        guard let url = URL(string: baseURL + req.url) else {
-//            // Return a fail publisher if the url is invalid
-//            return AnyPublisher(Fail<T, APIError>(error: APIError.badURL("Invalid Url")))
-//        }
-//        // We use the dataTaskPublisher from the URLSession which gives us a publisher to play around with.
-//        let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
-//        let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") ?? ""
-//        req.headers?.updateValue(accessToken, forKey: "x-access-token")
-//
-//        return fetchURLResponse(urlRequest: req.buildURLRequest(with: url))
-//    }
-
-    func fetchRefreshTokenRequest<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+    func fetchRefreshTokenRequest(urlRequest: URLRequest) -> AnyPublisher<RefreshTokenResponse, Error> {
         let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") ?? ""
         print("accessToken : \(accessToken)")
@@ -354,29 +334,26 @@ public class NetworkManager: Requestable {
 
         return sentRequest
             .mapError { $0 as Error }
-            .tryMap { refreshTokenResponse in
-                guard let appToken = refreshTokenResponse.data.token.appToken else {
-                    throw APIError.refreshTokenError("Missing appToken")
-                }
-
-                var requestWithNewAccessToken = urlRequest
-                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-
-                return requestWithNewToken(urlRequest)
-//                return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
-//                    .tryMap { newOutput in
-//                        return newOutput.data
-//                    }
-//                    .decode(type: T.self, decoder: JSONDecoder())
-//                    .mapError { error in
-//                        if let apiError = error as? APIError {
-//                            return apiError
-//                        }
-//                        return APIError.invalidJSON(String(describing: error.localizedDescription))
-//                    }
-            }
+//            .tryMap { refreshTokenResponse in
+//                guard let appToken = refreshTokenResponse.data.token.appToken else {
+//                    throw APIError.refreshTokenError("Missing appToken")
+//                }
+//
+//                return fetchWithNewToken(urlRequest: urlRequest)
+//            }
             .eraseToAnyPublisher()
     }
+
+    func fetchWithNewToken<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+        var requestWithNewAccessToken = urlRequest
+        requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+        let sentRequest: AnyPublisher<T, APIError> = self.request(requestWithNewAccessToken)
+
+        return sentRequest
+            .mapError { $0 as Error }
+            .eraseToAnyPublisher()
+    }
+
 
 //    func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
 //        // Implement your refresh token request logic here
