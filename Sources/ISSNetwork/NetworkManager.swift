@@ -56,27 +56,6 @@ public class NetworkManager: Requestable {
         return fetchRefreshTokenURLResponse(urlRequest: req.buildURLRequest(with: url))
     }
 
-//    func fetchURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
-//        print("Request ::: \(urlRequest)")
-//
-//        return URLSession.shared
-//            .dataTaskPublisher(for: urlRequest)
-//            .tryMap { output in
-//                if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-//                    // Use flatMap to conditionally handle token refresh asynchronously
-//                    print("Token Expired ::: \(response.statusCode)")
-//                }
-//                // Continue with the subsequent steps when the response status code is not 401.
-//                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
-//                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
-//                    throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
-//                }
-//
-//                return output.data
-//            }
-//            .eraseToAnyPublisher()
-//    }
-
     func fetchRefreshTokenURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         print("Request ::: \(urlRequest)")
         return URLSession.shared
@@ -133,6 +112,11 @@ public class NetworkManager: Requestable {
                         }, receiveValue: { response in
                             // Handle the successful response here
                             print("Refresh Token Success: \(response)")
+                            UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
+                            UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
+                            var requestWithNewAccessToken = urlRequest
+                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(response.data.appToken, forKey: "accessToken")
+                            return fetchURLResponse(urlRequest: requestWithNewAccessToken)
                         })
                         .store(in: &self.cancellables)
                  }
@@ -162,34 +146,6 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-//    func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
-//        // Assuming you have a refresh token and authentication server endpoint.
-//        let refreshToken = UserDefaults.standard.object(forKey: "refreshToken")
-//        let refreshTokenEndpoint = NetworkConfiguration.APIEndpoint.refreshToken.path
-//
-//        // Create a request to refresh the token.
-//        guard let url = URL(string: refreshTokenEndpoint) else {
-//            return Fail(error: APIError.badURL("Invalid Refresh Token URL"))
-//                .eraseToAnyPublisher()
-//        }
-//
-//        var request = URLRequest(url: url)
-//        request.httpMethod = NetworkConfiguration.APIEndpoint.refreshToken.httpMethod
-//        // You might need to set headers or parameters required by your authentication server.
-//
-//        return URLSession.shared.dataTaskPublisher(for: request)
-//            .map(\.data)
-//            .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
-//            .mapError { error in
-//                if let apiError = error as? APIError {
-//                    return apiError
-//                } else {
-//                    return APIError.badURL("Token Refresh Failed: \(error.localizedDescription)")
-//                }
-//            }
-//            .eraseToAnyPublisher()
-//    }
-
     func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
         let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") ?? ""
@@ -204,35 +160,6 @@ public class NetworkManager: Requestable {
             .mapError { $0 as Error }
             .eraseToAnyPublisher()
     }
-
-//    func requestRefreshToken(_ request: NetworkRequest) -> AnyPublisher<RefreshTokenResponse, APIError> {
-//        return URLSession.shared.dataTaskPublisher(for: request.buildURLRequest(with: request))
-//            .mapError { error in
-//                // Map URLSession errors to APIError
-//                return APIError.refreshTokenError("Refresh Token Error")
-//            }
-//            .flatMap { data, response in
-//                if let httpResponse = response as? HTTPURLResponse, (200 ..< 300) ~= httpResponse.statusCode {
-//                    // If the response status code is in the success range, decode the response
-//                    do {
-//                        let decodedResponse = try JSONDecoder().decode(RefreshTokenResponse.self, from: data)
-//                        return Just(decodedResponse)
-//                            .setFailureType(to: APIError.self)
-//                            .eraseToAnyPublisher()
-//                    } catch {
-//                        return Fail(error: APIError.invalidJSON(String(describing: error.localizedDescription)))
-//                            .eraseToAnyPublisher()
-//                    }
-//                } else {
-//                    // If the response status code is not in the success range, create an APIError
-//                    let code = (response as? HTTPURLResponse)?.statusCode ?? 0
-//                    return Fail(error: APIError.serverError(code: code, error: "Server error"))
-//                        .eraseToAnyPublisher()
-//                }
-//            }
-//            .eraseToAnyPublisher()
-//    }
-
 }
 
 public extension NetworkManager {
