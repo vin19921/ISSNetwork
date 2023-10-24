@@ -344,10 +344,10 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-    func fetchWithNewToken<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+    func fetchWithNewToken<T>(urlRequest: URLRequest) -> AnyPublisher<T, Error> where T: Decodable, T: Encodable {
         var requestWithNewAccessToken = urlRequest
         requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-        let sentRequest: AnyPublisher<T, APIError> = self.request(requestWithNewAccessToken)
+        let sentRequest: AnyPublisher<T, APIError> = self.requestWithNewToken(requestWithNewAccessToken)
 
         return sentRequest
             .mapError { $0 as Error }
