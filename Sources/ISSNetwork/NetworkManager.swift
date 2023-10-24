@@ -105,38 +105,29 @@ public class NetworkManager: Requestable {
                             guard let appToken = refreshTokenResponse.data.token.appToken else {
                                 throw APIError.refreshTokenError("Missing appToken")
                             }
-                            
+
                             var requestWithNewAccessToken = urlRequest
                             requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                            
                             return requestWithNewAccessToken
-                        }
-                        .flatMap { newRequest in
-                            return URLSession.shared.dataTaskPublisher(for: newRequest)
-                                .tryMap { newOutput in
-                                    return newOutput.data
-                                }
-                                .decode(type: T.self, decoder: JSONDecoder())
-                                .mapError { error in
-                                    if let apiError = error as? APIError {
-                                        return apiError
-                                    }
-                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
-                                }
                         }
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
-                    return Just(output.data)
-                        .decode(type: T.self, decoder: JSONDecoder())
-                        .mapError { error in
-                            if let apiError = error as? APIError {
-                                return apiError
-                            }
-                            return APIError.invalidJSON(String(describing: error.localizedDescription))
-                        }
+                    return urlRequest
                 }
             }
-            .switchToLatest()
+            .flatMap { newRequest in
+                return URLSession.shared.dataTaskPublisher(for: newRequest)
+                    .tryMap { newOutput in
+                        return newOutput.data
+                    }
+                    .decode(type: T.self, decoder: JSONDecoder())
+                    .mapError { error in
+                        if let apiError = error as? APIError {
+                            return apiError
+                        }
+                        return APIError.invalidJSON(String(describing: error.localizedDescription))
+                    }
+            }
             .eraseToAnyPublisher()
     }
 
