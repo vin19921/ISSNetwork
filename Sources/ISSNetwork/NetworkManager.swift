@@ -101,26 +101,26 @@ public class NetworkManager: Requestable {
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
                     return self.fetchRefreshTokenRequest()
-                        .tryMap { refreshTokenResponse in
-                            guard let appToken = refreshTokenResponse.data.token.appToken else {
-                                throw APIError.refreshTokenError("Missing appToken")
-                            }
-
-                            var requestWithNewAccessToken = urlRequest
-                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                            return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
-                                .tryMap { newOutput in
-                                    return newOutput.data
-                                }
-                                .decode(type: T.self, decoder: JSONDecoder())
-                                .mapError { error in
-                                    if let apiError = error as? APIError {
-                                        return apiError
-                                    }
-                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
-                                }
-
-                        }
+//                        .tryMap { refreshTokenResponse in
+//                            guard let appToken = refreshTokenResponse.data.token.appToken else {
+//                                throw APIError.refreshTokenError("Missing appToken")
+//                            }
+//
+//                            var requestWithNewAccessToken = urlRequest
+//                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+//
+//                            return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
+//                                .tryMap { newOutput in
+//                                    return newOutput.data
+//                                }
+//                                .decode(type: T.self, decoder: JSONDecoder())
+//                                .mapError { error in
+//                                    if let apiError = error as? APIError {
+//                                        return apiError
+//                                    }
+//                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+//                                }
+//                        }
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
                     return output.data
@@ -130,7 +130,7 @@ public class NetworkManager: Requestable {
                 if let apiError = error as? APIError {
                     return apiError
                 }
-                return APIError.unknownError("Unknown error occurred")
+                return APIError.refreshTokenError("Unknown error occurred")
             }
             .eraseToAnyPublisher()
     }
@@ -337,6 +337,26 @@ public class NetworkManager: Requestable {
 
         return sentRequest
             .mapError { $0 as Error }
+            .tryMap { refreshTokenResponse in
+                guard let appToken = refreshTokenResponse.data.token.appToken else {
+                    throw APIError.refreshTokenError("Missing appToken")
+                }
+
+                var requestWithNewAccessToken = urlRequest
+                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+
+                return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
+                    .tryMap { newOutput in
+                        return newOutput.data
+                    }
+                    .decode(type: T.self, decoder: JSONDecoder())
+                    .mapError { error in
+                        if let apiError = error as? APIError {
+                            return apiError
+                        }
+                        return APIError.invalidJSON(String(describing: error.localizedDescription))
+                    }
+            }
             .eraseToAnyPublisher()
     }
 }
