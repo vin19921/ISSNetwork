@@ -322,7 +322,7 @@ public class NetworkManager: Requestable {
 //            .eraseToAnyPublisher()
 //    }
 
-    func fetchRefreshTokenRequest<T>(urlRequest: URLRequest) -> AnyPublisher<T, Error> {
+    func fetchRefreshTokenRequest<T>(urlRequest: URLRequest) -> AnyPublisher<T, Error> where T: Decodable, T: Encodable {
         let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") ?? ""
         print("accessToken : \(accessToken)")
@@ -345,8 +345,9 @@ public class NetworkManager: Requestable {
     }
 
     func fetchWithNewToken<T>(urlRequest: URLRequest) -> AnyPublisher<T, Error> where T: Decodable, T: Encodable {
+        let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
         var requestWithNewAccessToken = urlRequest
-        requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+        requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(accessToken, forKey: "x-access-token")
         let sentRequest: AnyPublisher<T, APIError> = self.requestWithNewToken(requestWithNewAccessToken)
 
         return sentRequest
