@@ -111,24 +111,32 @@ public class NetworkManager: Requestable {
                             
                             return requestWithNewAccessToken
                         }
+                        .flatMap { newRequest in
+                            return URLSession.shared.dataTaskPublisher(for: newRequest)
+                                .tryMap { newOutput in
+                                    return newOutput.data
+                                }
+                                .decode(type: T.self, decoder: JSONDecoder())
+                                .mapError { error in
+                                    if let apiError = error as? APIError {
+                                        return apiError
+                                    }
+                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+                                }
+                        }
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
-                    return urlRequest
+                    return Just(output.data)
+                        .decode(type: T.self, decoder: JSONDecoder())
+                        .mapError { error in
+                            if let apiError = error as? APIError {
+                                return apiError
+                            }
+                            return APIError.invalidJSON(String(describing: error.localizedDescription))
+                        }
                 }
             }
-            .flatMap { request in
-                return URLSession.shared.dataTaskPublisher(for: request)
-                    .tryMap { newOutput in
-                        return newOutput.data
-                    }
-                    .decode(type: T.self, decoder: JSONDecoder())
-                    .mapError { error in
-                        if let apiError = error as? APIError {
-                            return apiError
-                        }
-                        return APIError.invalidJSON(String(describing: error.localizedDescription))
-                    }
-            }
+            .switchToLatest()
             .eraseToAnyPublisher()
     }
 
