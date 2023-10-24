@@ -174,20 +174,6 @@ public class NetworkManager: Requestable {
                                 // Update the headers with the new appToken
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                                return fetchWithNewToken(urlRequest: requestWithNewAccessToken)
-//                                return URLSession.shared
-//                                    .dataTaskPublisher(for: requestWithNewAccessToken)
-//                                    .tryMap { output in
-//                                        return output.data
-//                                    }
-//                                    .decode(type: T.self, decoder: JSONDecoder())
-//                                    .mapError { error in
-//                                        if let apiError = error as? APIError {
-//                                            return apiError
-//                                        }
-//                                        return APIError.invalidJSON(String(describing: error.localizedDescription))
-//                                    }
-//                                    .eraseToAnyPublisher()
 
                             } else {
                                 // Handle the absence of the appToken
