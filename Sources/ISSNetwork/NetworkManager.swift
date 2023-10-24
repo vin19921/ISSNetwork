@@ -116,7 +116,7 @@ public class NetworkManager: Requestable {
                 }
             }
             .flatMap { newRequest in
-                return URLSession.shared.dataTaskPublisher(for: newRequest)
+                URLSession.shared.dataTaskPublisher(for: newRequest)
                     .tryMap { newOutput in
                         return newOutput.data
                     }
@@ -127,6 +127,12 @@ public class NetworkManager: Requestable {
                         }
                         return APIError.invalidJSON(String(describing: error.localizedDescription))
                     }
+            }
+            .mapError { error in
+                if let apiError = error as? APIError {
+                    return apiError
+                }
+                return APIError.unknownError("Unknown error occurred")
             }
             .eraseToAnyPublisher()
     }
