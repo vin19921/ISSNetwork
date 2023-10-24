@@ -21,6 +21,7 @@ public class NetworkManager: Requestable {
     private let networkMonitor: NetworkConnectivity
     private let session: URLSession
     private let baseURL: String = NetworkConfiguration.environment.baseURL
+    private var cancellables = Set<AnyCancellable>()
 
     public required init(monitor: NetworkConnectivity = ISSNetworkGateway.createNetworkMonitor(), session: URLSession = URLSession.shared) {
         networkMonitor = monitor
@@ -72,16 +73,15 @@ public class NetworkManager: Requestable {
                 if let apiError = error as? APIError {
                     switch apiError {
                     case let .authenticationError(code, description):
-                        return refreshToken()
-                            .flatMap { newTokens in
-                                // If the token refresh is successful, you can retry the original request
-                                // with the new tokens here. This is a simplified example:
-                                print("newTokens ::: \(newTokens)")
-//                                var requestWithNewTokens = urlRequest
-//                                requestWithNewTokens.addValue(newTokens.accessToken, forHTTPHeaderField: "Authorization")
-//                                return fetchURLResponse(urlRequest: requestWithNewTokens)
-                            }
-                            .eraseToAnyPublisher()
+                        self.fetchRefreshTokenRequest()
+                            .sink(receiveCompletion: { completion in
+                                if case .failure(let error) = completion {
+                                    print("Refresh Token Failure")
+                                }
+                            }, receiveValue: { response in
+                                print("Refresh Token Success\(response.data.appToken)")
+                            })
+                            .store(in: &self.cancellables)
                     default:
                         return apiError
                     }
@@ -120,17 +120,17 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-//    func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
-//        let refreshToken = UserDefaults.standard.object(forKey: "refreshToken")
-//        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
-//                                     headers: ["x-access-token": "\(String(describing: refreshToken))"],
-//                                     httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
-//        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = networkRequest.request(request)
-//
-//        return sentRequest
-//            .mapError { $0 as Error }
-//            .eraseToAnyPublisher()
-//    }
+    func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
+        let refreshToken = UserDefaults.standard.object(forKey: "refreshToken")
+        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
+                                     headers: ["x-access-token": "\(String(describing: refreshToken))"],
+                                     httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
+        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = self.request(request)
+
+        return sentRequest
+            .mapError { $0 as Error }
+            .eraseToAnyPublisher()
+    }
 }
 
 public extension NetworkManager {
