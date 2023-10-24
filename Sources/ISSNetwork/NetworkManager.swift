@@ -125,7 +125,7 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-    func handleTokenRefreshAndRequest<T>(_ urlRequest: URLRequest) -> AnyPublisher<T, Error> where T: Decodable, T: Encodable {
+    func handleTokenRefreshAndRequest<T>(_ urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         return self.fetchRefreshTokenRequest()
             .tryMap { refreshTokenResponse in
                 if let appToken = refreshTokenResponse.data.token.appToken {
