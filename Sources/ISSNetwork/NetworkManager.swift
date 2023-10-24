@@ -120,6 +120,9 @@ public class NetworkManager: Requestable {
                                 return URLSession.shared
                                     .dataTaskPublisher(for: requestWithNewAccessToken)
                                     .tryMap { output in
+                                        if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
+                                            throw APIError.refreshTokenError("refreshTokenError")
+                                        }
                                         return output.data
                                     }
                                     .decode(type: T.self, decoder: JSONDecoder())
@@ -219,8 +222,7 @@ public class NetworkManager: Requestable {
 //)
 //                            } else {
 //                                // Handle the absence of the appToken
-//                                return Fail(error: APIError.refreshTokenError("Missing appToken"))
-//                                    .eraseToAnyPublisher()
+//                                throw APIError.refreshTokenError("Refresh Token Error")
 //                            }
 //                        })
 //                        .store(in: &self.cancellables)
