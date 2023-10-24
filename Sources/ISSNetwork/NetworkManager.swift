@@ -55,31 +55,34 @@ public class NetworkManager: Requestable {
                         .mapError { error in
                             return APIError.refreshTokenError("APIError.refreshTokenError")
                         }
-                        .flatMap { refreshTokenResponse in
+                        .tryMap { refreshTokenResponse in
                             // Token refresh is successful, continue with the original request
-                            var requestWithNewAccessToken = urlRequest
-                            let newAccessToken = refreshTokenResponse.data.appToken ?? ""
-                            requestWithNewAccessToken.addValue(newAccessToken, forHTTPHeaderField: "x-access-token")
-                            return URLSession.shared
-                                .dataTaskPublisher(for: requestWithNewAccessToken)
-                                .tryMap { output in
-                                    return output.data
-                                }
-                                .decode(type: T.self, decoder: JSONDecoder())
-                                .mapError { error in
-                                    if let apiError = error as? APIError {
-                                        return apiError
-                                    }
-                                    // Return an error if JSON decoding fails
-                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
-                                }
-                                .replaceError(with: T.self) // Replace decoding error with a default value
+//                            var requestWithNewAccessToken = urlRequest
+//                            let newAccessToken = refreshTokenResponse.data.appToken ?? ""
+//                            requestWithNewAccessToken.addValue(newAccessToken, forHTTPHeaderField: "x-access-token")
+//                            return URLSession.shared
+//                                .dataTaskPublisher(for: requestWithNewAccessToken)
+//                                .tryMap { output in
+//                                    return output.data
+//                                }
+//                                .decode(type: T.self, decoder: JSONDecoder())
+//                                .mapError { error in
+//                                    if let apiError = error as? APIError {
+//                                        return apiError
+//                                    }
+//                                    // Return an error if JSON decoding fails
+//                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+//                                }
+//                                .replaceError(with: T.self) // Replace decoding error with a default value
                         }
                 }
                 // Continue with the subsequent steps when the response status code is not 401.
+                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
+                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
+                    throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
+                }
+
                 return Just(output.data)
-                    .setFailureType(to: APIError.self)
-                    .eraseToAnyPublisher()
             }
             .switchToLatest()
             .eraseToAnyPublisher()
