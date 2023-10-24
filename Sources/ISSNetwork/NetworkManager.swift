@@ -110,17 +110,18 @@ public class NetworkManager: Requestable {
                             var requestWithNewAccessToken = urlRequest
                             requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
 
-                            return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
-                                .tryMap { newOutput in
-                                    return newOutput.data
-                                }
-                                .decode(type: T.self, decoder: JSONDecoder())
-                                .mapError { error in
-                                    if let apiError = error as? APIError {
-                                        return apiError
-                                    }
-                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
-                                }
+                            return fetchURLResponse(urlRequest: urlRequest)
+//                            URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
+//                                .tryMap { newOutput in
+//                                    return newOutput.data
+//                                }
+//                                .decode(type: T.self, decoder: JSONDecoder())
+//                                .mapError { error in
+//                                    if let apiError = error as? APIError {
+//                                        return apiError
+//                                    }
+//                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+//                                }
                         }
                         .eraseToAnyPublisher()
                 } else {
