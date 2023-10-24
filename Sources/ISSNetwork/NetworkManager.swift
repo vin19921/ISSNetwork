@@ -119,7 +119,7 @@ public class NetworkManager: Requestable {
                         if let apiError = error as? APIError {
                             return apiError
                         }
-                        return APIError.unknownError("Unknown error during token refresh and request.")
+                        return APIError.refreshTokenError("Refresh Token Error")
                     }
             }
             .eraseToAnyPublisher()
