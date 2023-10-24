@@ -121,7 +121,7 @@ public class NetworkManager: Requestable {
                                     .dataTaskPublisher(for: requestWithNewAccessToken)
                                     .tryMap { output in
                                         if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-                                            throw APIError.refreshTokenError("refreshTokenError")
+                                            return APIError.refreshTokenError("refreshTokenError")
                                         }
                                         return output.data
                                     }
@@ -136,7 +136,7 @@ public class NetworkManager: Requestable {
                                 
                             } else {
                                 // Handle the absence of the appToken
-                                throw APIError.refreshTokenError("Missing appToken")
+                                return APIError.refreshTokenError("Missing appToken")
                             }
                         })
                         .store(in: &self.cancellables)
