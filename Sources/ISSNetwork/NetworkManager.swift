@@ -115,11 +115,17 @@ public class NetworkManager: Requestable {
             .flatMap { _ in
                 // Handle token refresh and make the subsequent request
                 return self.handleTokenRefreshAndRequest(urlRequest)
+                    .mapError { error in
+                        if let apiError = error as? APIError {
+                            return apiError
+                        }
+                        return APIError.unknownError("Unknown error during token refresh and request.")
+                    }
             }
             .eraseToAnyPublisher()
     }
 
-    func handleTokenRefreshAndRequest<T>(_ urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+    func handleTokenRefreshAndRequest<T>(_ urlRequest: URLRequest) -> AnyPublisher<T, Error> where T: Decodable, T: Encodable {
         return self.fetchRefreshTokenRequest()
             .tryMap { refreshTokenResponse in
                 if let appToken = refreshTokenResponse.data.token.appToken {
