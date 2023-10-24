@@ -77,6 +77,7 @@ public class NetworkManager: Requestable {
                             .sink(receiveCompletion: { completion in
                                 if case .failure(let error) = completion {
                                     print("Refresh Token Failure")
+                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
                                 }
                             }, receiveValue: { response in
                                 print("Refresh Token Success\(response.data.appToken)")
@@ -102,7 +103,7 @@ public class NetworkManager: Requestable {
 //            return Fail(error: APIError.badURL("Invalid Refresh Token URL"))
 //                .eraseToAnyPublisher()
 //        }
-//        
+//
 //        var request = URLRequest(url: url)
 //        request.httpMethod = NetworkConfiguration.APIEndpoint.refreshToken.httpMethod
 //        // You might need to set headers or parameters required by your authentication server.
