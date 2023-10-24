@@ -92,33 +92,33 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-    func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
-        // Assuming you have a refresh token and authentication server endpoint.
-        let refreshToken = UserDefaults.standard.object(forKey: "refreshToken")
-        let refreshTokenEndpoint = NetworkConfiguration.APIEndpoint.refreshToken.path
-        
-        // Create a request to refresh the token.
-        guard let url = URL(string: refreshTokenEndpoint) else {
-            return Fail(error: APIError.badURL("Invalid Refresh Token URL"))
-                .eraseToAnyPublisher()
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = NetworkConfiguration.APIEndpoint.refreshToken.httpMethod
-        // You might need to set headers or parameters required by your authentication server.
-
-        return URLSession.shared.dataTaskPublisher(for: request)
-            .map(\.data)
-            .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
-            .mapError { error in
-                if let apiError = error as? APIError {
-                    return apiError
-                } else {
-                    return APIError.badURL("Token Refresh Failed: \(error.localizedDescription)")
-                }
-            }
-            .eraseToAnyPublisher()
-    }
+//    func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
+//        // Assuming you have a refresh token and authentication server endpoint.
+//        let refreshToken = UserDefaults.standard.object(forKey: "refreshToken")
+//        let refreshTokenEndpoint = NetworkConfiguration.APIEndpoint.refreshToken.path
+//
+//        // Create a request to refresh the token.
+//        guard let url = URL(string: refreshTokenEndpoint) else {
+//            return Fail(error: APIError.badURL("Invalid Refresh Token URL"))
+//                .eraseToAnyPublisher()
+//        }
+//        
+//        var request = URLRequest(url: url)
+//        request.httpMethod = NetworkConfiguration.APIEndpoint.refreshToken.httpMethod
+//        // You might need to set headers or parameters required by your authentication server.
+//
+//        return URLSession.shared.dataTaskPublisher(for: request)
+//            .map(\.data)
+//            .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
+//            .mapError { error in
+//                if let apiError = error as? APIError {
+//                    return apiError
+//                } else {
+//                    return APIError.badURL("Token Refresh Failed: \(error.localizedDescription)")
+//                }
+//            }
+//            .eraseToAnyPublisher()
+//    }
 
     func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken")
