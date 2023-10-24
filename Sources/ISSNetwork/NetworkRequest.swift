@@ -71,6 +71,7 @@ public enum APIError: Error, Equatable {
     case serverError(code: Int, error: String)
     case internetError(_ error: String)
     case authenticationError(code: Int, error: String)
+    case refreshTokenError(_ error: String)
 }
 
 public extension Encodable {
