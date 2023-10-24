@@ -113,7 +113,7 @@ public class NetworkManager: Requestable {
                         }, receiveValue: { response in
                             // Handle the successful response here
                             print("Refresh Token Success: \(response)")
-                            if let appToken = refreshTokenResponse.data.token.appToken {
+                            if let appToken = response.data.token.appToken {
                                 // Update the headers with the new appToken
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
