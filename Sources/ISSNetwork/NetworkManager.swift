@@ -64,7 +64,7 @@ public class NetworkManager: Requestable {
                         })
                         .store(in: &self.cancellables)
 
-                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
+//                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
                  }
                 // throw an error if response is nil
                 guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
@@ -85,8 +85,8 @@ public class NetworkManager: Requestable {
             .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
-                    switch apiError {
-                    case let .authenticationError(code, description):
+//                    switch apiError {
+//                    case let .authenticationError(code, description):
 //                        self.fetchRefreshTokenRequest()
 //                            .mapError { error in
 //                                // Transform the error to APIError.refreshTokenError here.
@@ -100,7 +100,7 @@ public class NetworkManager: Requestable {
 //                                print("Refresh Token Success\(response.data.appToken)")
 //                            })
 //                            .store(in: &self.cancellables)
-                    default:
+//                    default:
                         return apiError
                     }
                 }
