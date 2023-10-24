@@ -74,10 +74,13 @@ public class NetworkManager: Requestable {
                     switch apiError {
                     case let .authenticationError(code, description):
                         self.fetchRefreshTokenRequest()
+                            .mapError { error in
+                                // Transform the error to APIError.refreshTokenError here.
+                                return APIError.refreshTokenError("APIError.refreshTokenError")
+                            }
                             .sink(receiveCompletion: { completion in
                                 if case .failure(let error) = completion {
                                     print("Refresh Token Failure")
-                                    return APIError.refreshTokenError("APIError.refreshTokenError")
                                 }
                             }, receiveValue: { response in
                                 print("Refresh Token Success\(response.data.appToken)")
