@@ -114,7 +114,7 @@ public class NetworkManager: Requestable {
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-                    self.fetchRefreshTokenRequest(urlRequest: urlRequest)
+                    return self.fetchRefreshTokenRequest(urlRequest: urlRequest)
                         .sink(receiveCompletion: { completion in
                             switch completion {
                             case .finished:
@@ -345,7 +345,7 @@ public class NetworkManager: Requestable {
     }
 
     func fetchWithNewToken<T>(urlRequest: URLRequest) -> AnyPublisher<T, Error> where T: Decodable, T: Encodable {
-        let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
+        let accessToken = UserDefaults.standard.string(forKey: "accessToken") ?? ""
         var requestWithNewAccessToken = urlRequest
         requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(accessToken, forKey: "x-access-token")
         let sentRequest: AnyPublisher<T, APIError> = self.requestWithNewToken(requestWithNewAccessToken)
