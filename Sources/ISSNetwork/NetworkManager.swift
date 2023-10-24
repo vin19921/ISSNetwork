@@ -56,26 +56,26 @@ public class NetworkManager: Requestable {
         return fetchRefreshTokenURLResponse(urlRequest: req.buildURLRequest(with: url))
     }
 
-    func fetchURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
-        print("Request ::: \(urlRequest)")
-        
-        return URLSession.shared
-            .dataTaskPublisher(for: urlRequest)
-            .tryMap { output in
-                if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-                    // Use flatMap to conditionally handle token refresh asynchronously
-                    print("Token Expired ::: \(response.statusCode)")
-                }
-                // Continue with the subsequent steps when the response status code is not 401.
-                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
-                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
-                    throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
-                }
-
-                return output.data
-            }
-            .eraseToAnyPublisher()
-    }
+//    func fetchURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+//        print("Request ::: \(urlRequest)")
+//
+//        return URLSession.shared
+//            .dataTaskPublisher(for: urlRequest)
+//            .tryMap { output in
+//                if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
+//                    // Use flatMap to conditionally handle token refresh asynchronously
+//                    print("Token Expired ::: \(response.statusCode)")
+//                }
+//                // Continue with the subsequent steps when the response status code is not 401.
+//                guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
+//                    let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
+//                    throw APIError.serverError(code: code, error: "Something went wrong, please try again later.")
+//                }
+//
+//                return output.data
+//            }
+//            .eraseToAnyPublisher()
+//    }
 
     func fetchRefreshTokenURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         
