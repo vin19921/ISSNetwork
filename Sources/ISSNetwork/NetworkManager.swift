@@ -52,8 +52,8 @@ public class NetworkManager: Requestable {
                     // Use flatMap to conditionally handle token refresh asynchronously
                     print("Token Expired ::: \(response.statusCode)")
                     return Just(())
-                        .flatMap { _ -> AnyPublisher<RefreshTokenResponse, APIError> in
-                            self.fetchRefreshTokenRequest()
+                        .flatMap { _ -> AnyPublisher<T, APIError> in
+                            return self.fetchRefreshTokenRequest()
                                 .mapError { error in
                                     return APIError.refreshTokenError("APIError.refreshTokenError")
                                 }
@@ -64,7 +64,6 @@ public class NetworkManager: Requestable {
                                     
                                     // Recursively call fetchURLResponse with the updated request
                                     return self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
-                                        .eraseToAnyPublisher()
                                 }
                                 .eraseToAnyPublisher()
                         }
