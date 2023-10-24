@@ -73,6 +73,7 @@ public class NetworkManager: Requestable {
                                     // Return an error if JSON decoding fails
                                     return APIError.invalidJSON(String(describing: error.localizedDescription))
                                 }
+                                .replaceError(with: T.self) // Replace decoding error with a default value
                         }
                 }
                 // Continue with the subsequent steps when the response status code is not 401.
@@ -80,10 +81,9 @@ public class NetworkManager: Requestable {
                     .setFailureType(to: APIError.self)
                     .eraseToAnyPublisher()
             }
-            .switchToLatest() // Flatten the nested publisher
+            .switchToLatest()
             .eraseToAnyPublisher()
     }
-
 
 //    func fetchURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
 //        print("Request ::: \(urlRequest)")
