@@ -100,30 +100,30 @@ public class NetworkManager: Requestable {
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-                    return fetchRefreshTokenRequest()
-                        .mapError { $0 as Error }
-                        .tryMap { refreshTokenResponse in
-                            guard let appToken = refreshTokenResponse.data.token.appToken else {
-                                throw APIError.refreshTokenError("Missing appToken")
-                            }
-
-                            var requestWithNewAccessToken = urlRequest
-                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-
-                            return fetchURLResponse(urlRequest: requestWithNewAccessToken)
-//                            URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
-//                                .tryMap { newOutput in
-//                                    return newOutput.data
-//                                }
-//                                .decode(type: T.self, decoder: JSONDecoder())
-//                                .mapError { error in
-//                                    if let apiError = error as? APIError {
-//                                        return apiError
-//                                    }
-//                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
-//                                }
-                        }
-                        .eraseToAnyPublisher()
+                    return fetchRefreshTokenRequest(urlRequest: urlRequest)
+//                        .mapError { $0 as Error }
+//                        .tryMap { refreshTokenResponse in
+//                            guard let appToken = refreshTokenResponse.data.token.appToken else {
+//                                throw APIError.refreshTokenError("Missing appToken")
+//                            }
+//
+//                            var requestWithNewAccessToken = urlRequest
+//                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+//
+//                            return fetchURLResponse(urlRequest: requestWithNewAccessToken)
+////                            URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
+////                                .tryMap { newOutput in
+////                                    return newOutput.data
+////                                }
+////                                .decode(type: T.self, decoder: JSONDecoder())
+////                                .mapError { error in
+////                                    if let apiError = error as? APIError {
+////                                        return apiError
+////                                    }
+////                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+////                                }
+//                        }
+//                        .eraseToAnyPublisher()
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
                     return output.data
@@ -328,7 +328,7 @@ public class NetworkManager: Requestable {
 //        return fetchURLResponse(urlRequest: req.buildURLRequest(with: url))
 //    }
 
-    func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
+    func fetchRefreshTokenRequest<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") ?? ""
         print("accessToken : \(accessToken)")
@@ -348,17 +348,18 @@ public class NetworkManager: Requestable {
                 var requestWithNewAccessToken = urlRequest
                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
 
-                return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
-                    .tryMap { newOutput in
-                        return newOutput.data
-                    }
-                    .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
-                    .mapError { error in
-                        if let apiError = error as? APIError {
-                            return apiError
-                        }
-                        return APIError.invalidJSON(String(describing: error.localizedDescription))
-                    }
+                return fetchURLResponse(urlRequest: requestWithNewAccessToken)
+//                return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
+//                    .tryMap { newOutput in
+//                        return newOutput.data
+//                    }
+//                    .decode(type: T.self, decoder: JSONDecoder())
+//                    .mapError { error in
+//                        if let apiError = error as? APIError {
+//                            return apiError
+//                        }
+//                        return APIError.invalidJSON(String(describing: error.localizedDescription))
+//                    }
             }
             .eraseToAnyPublisher()
     }
