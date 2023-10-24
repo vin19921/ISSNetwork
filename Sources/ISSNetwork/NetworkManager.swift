@@ -50,7 +50,21 @@ public class NetworkManager: Requestable {
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
                      // Use flatMap to handle token refresh asynchronously
                     print("Token Expired ::: \(response.statusCode)")
-                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
+                    self.fetchRefreshTokenRequest()
+                        .mapError { error in
+                            // Transform the error to APIError.refreshTokenError here.
+                            throw APIError.refreshTokenError("APIError.refreshTokenError")
+                        }
+                        .sink(receiveCompletion: { completion in
+                            if case .failure(let error) = completion {
+                                print("Refresh Token Failure")
+                            }
+                        }, receiveValue: { response in
+                            print("Refresh Token Success\(response.data.appToken)")
+                        })
+                        .store(in: &self.cancellables)
+
+//                    throw APIError.authenticationError(code: response.statusCode, error: "authenticationError")
                  }
                 // throw an error if response is nil
                 guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
@@ -73,19 +87,19 @@ public class NetworkManager: Requestable {
                 if let apiError = error as? APIError {
                     switch apiError {
                     case let .authenticationError(code, description):
-                        self.fetchRefreshTokenRequest()
-                            .mapError { error in
-                                // Transform the error to APIError.refreshTokenError here.
-                                return APIError.refreshTokenError("APIError.refreshTokenError")
-                            }
-                            .sink(receiveCompletion: { completion in
-                                if case .failure(let error) = completion {
-                                    print("Refresh Token Failure")
-                                }
-                            }, receiveValue: { response in
-                                print("Refresh Token Success\(response.data.appToken)")
-                            })
-                            .store(in: &self.cancellables)
+//                        self.fetchRefreshTokenRequest()
+//                            .mapError { error in
+//                                // Transform the error to APIError.refreshTokenError here.
+//                                return APIError.refreshTokenError("APIError.refreshTokenError")
+//                            }
+//                            .sink(receiveCompletion: { completion in
+//                                if case .failure(let error) = completion {
+//                                    print("Refresh Token Failure")
+//                                }
+//                            }, receiveValue: { response in
+//                                print("Refresh Token Success\(response.data.appToken)")
+//                            })
+//                            .store(in: &self.cancellables)
                     default:
                         return apiError
                     }
