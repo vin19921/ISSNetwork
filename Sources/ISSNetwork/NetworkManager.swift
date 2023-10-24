@@ -118,12 +118,13 @@ public class NetworkManager: Requestable {
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
 
-//                                self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
-//                                self.requestWithNewToken(urlRequest)
-                                // Specify the generic type 'T' explicitly when calling fetchURLResponse
-                                let updatedRequestPublisher: AnyPublisher<T, APIError> = self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
+//                                let updatedRequestPublisher: AnyPublisher<T, APIError> = self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
 
-                                return updatedRequestPublisher
+                                return self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
+                            } else {
+                                // Handle the absence of the appToken
+                                return Fail(error: APIError.refreshTokenError("Missing appToken"))
+                                    .eraseToAnyPublisher()
                             }
                         })
                         .store(in: &self.cancellables)
