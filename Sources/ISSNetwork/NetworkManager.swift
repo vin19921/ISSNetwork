@@ -102,7 +102,7 @@ public class NetworkManager: Requestable {
 //                            .store(in: &self.cancellables)
 //                    default:
                         return apiError
-                    }
+//                    }
                 }
                 // return error if json decoding fails
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
