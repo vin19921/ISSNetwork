@@ -121,11 +121,20 @@ public class NetworkManager: Requestable {
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
                      // Use flatMap to handle token refresh asynchronously
-                    return Just(())
-                        .flatMap { _ -> AnyPublisher<T, APIError> in
-                            return self.fetchRefreshTokenURLResponse(urlRequest: urlRequest)
-                        }
-                        .eraseToAnyPublisher()
+                    self.fetchRefreshTokenRequest()
+                        .sink(receiveCompletion: { completion in
+                            switch completion {
+                            case .finished:
+                                break // No error to handle in this case.
+                            case .failure(let error):
+                                // Handle the error here
+                                print("Refresh Token Failure: \(error)")
+                            }
+                        }, receiveValue: { response in
+                            // Handle the successful response here
+                            print("Refresh Token Success: \(response)")
+                        })
+                        .store(in: &cancellables)
                  }
                 guard let response = output.response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode else {
                     let code = (output.response as? HTTPURLResponse)?.statusCode ?? 0
@@ -145,24 +154,7 @@ public class NetworkManager: Requestable {
             .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
-//                    switch apiError {
-//                    case let .authenticationError(code, description):
-//                        self.fetchRefreshTokenRequest()
-//                            .mapError { error in
-//                                // Transform the error to APIError.refreshTokenError here.
-//                                return APIError.refreshTokenError("APIError.refreshTokenError")
-//                            }
-//                            .sink(receiveCompletion: { completion in
-//                                if case .failure(let error) = completion {
-//                                    print("Refresh Token Failure")
-//                                }
-//                            }, receiveValue: { response in
-//                                print("Refresh Token Success\(response.data.appToken)")
-//                            })
-//                            .store(in: &self.cancellables)
-//                    default:
-                        return apiError
-//                    }
+                    return apiError
                 }
                 // return error if json decoding fails
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
@@ -209,6 +201,35 @@ public class NetworkManager: Requestable {
             .mapError { $0 as Error }
             .eraseToAnyPublisher()
     }
+
+    func requestRefreshToken(_ request: NetworkRequest) -> AnyPublisher<RefreshTokenResponse, APIError> {
+        return URLSession.shared.dataTaskPublisher(for: request.buildURLRequest())
+            .mapError { error in
+                // Map URLSession errors to APIError
+                return APIError.networkError(description: error.localizedDescription)
+            }
+            .flatMap { data, response in
+                if let httpResponse = response as? HTTPURLResponse, (200 ..< 300) ~= httpResponse.statusCode {
+                    // If the response status code is in the success range, decode the response
+                    do {
+                        let decodedResponse = try JSONDecoder().decode(RefreshTokenResponse.self, from: data)
+                        return Just(decodedResponse)
+                            .setFailureType(to: APIError.self)
+                            .eraseToAnyPublisher()
+                    } catch {
+                        return Fail(error: APIError.invalidJSON(description: error.localizedDescription))
+                            .eraseToAnyPublisher()
+                    }
+                } else {
+                    // If the response status code is not in the success range, create an APIError
+                    let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+                    return Fail(error: APIError.serverError(code: code, error: "Server error"))
+                        .eraseToAnyPublisher()
+                }
+            }
+            .eraseToAnyPublisher()
+    }
+
 }
 
 public extension NetworkManager {
