@@ -108,25 +108,23 @@ public class NetworkManager: Requestable {
 
                             var requestWithNewAccessToken = urlRequest
                             requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                            return requestWithNewAccessToken
+                            return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
+                                .tryMap { newOutput in
+                                    return newOutput.data
+                                }
+                                .decode(type: T.self, decoder: JSONDecoder())
+                                .mapError { error in
+                                    if let apiError = error as? APIError {
+                                        return apiError
+                                    }
+                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+                                }
+
                         }
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
-                    return urlRequest
+                    return output.data
                 }
-            }
-            .flatMap { newRequest in
-                URLSession.shared.dataTaskPublisher(for: newRequest)
-                    .tryMap { newOutput in
-                        return newOutput.data
-                    }
-                    .decode(type: T.self, decoder: JSONDecoder())
-                    .mapError { error in
-                        if let apiError = error as? APIError {
-                            return apiError
-                        }
-                        return APIError.invalidJSON(String(describing: error.localizedDescription))
-                    }
             }
             .mapError { error in
                 if let apiError = error as? APIError {
