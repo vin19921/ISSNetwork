@@ -97,6 +97,18 @@ public class NetworkManager: Requestable {
                 if let apiError = error as? APIError {
                     switch apiError {
                     case let .authenticationError(code, description):
+                        self.fetchRefreshTokenRequest()
+                            .sink(receiveCompletion: { completion in
+                                if case .failure(let error) = completion {
+                                    print("Refresh Token Failure")
+//                                            promise(.failure(error))
+                                }
+                            }, receiveValue: { response in
+                                print("Refresh Token Success\(response.data.appToken)")
+                                urlRequest.allHTTPHeaderFields?.updateValue(response.data.appToken, forKey: "x-access-token")
+                                return fetchURLResponse(urlRequest: urlRequest)
+                            })
+                            .store(in: &self.cancellables)
                         return APIError.authenticationError(code: code, error: description)
                     default:
                         return apiError
@@ -105,6 +117,18 @@ public class NetworkManager: Requestable {
                 // return error if json decoding fails
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
             }
+            .eraseToAnyPublisher()
+    }
+
+    func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
+        let refreshToken = UserDefaultsStore().value(key: UserDefaultsStore.Keys.refreshToken.value) ?? ""
+        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
+                                     headers: ["x-access-token": "\(String(describing: refreshToken))"],
+                                     httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
+        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = networkRequest.request(request)
+
+        return sentRequest
+            .mapError { $0 as Error }
             .eraseToAnyPublisher()
     }
 
