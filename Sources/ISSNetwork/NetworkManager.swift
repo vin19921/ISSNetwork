@@ -177,7 +177,7 @@ public class NetworkManager: Requestable {
 
                             } else {
                                 // Handle the absence of the appToken
-                                return APIError.refreshTokenError("Missing appToken")
+                                throw APIError.refreshTokenError("Missing appToken")
                             }
                         })
                         .store(in: &self.cancellables)
