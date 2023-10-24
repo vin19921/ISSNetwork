@@ -112,7 +112,7 @@ public class NetworkManager: Requestable {
                 }
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
             }
-            .flatMap { _ in
+            .flatMap { _ -> AnyPublisher<T, APIError> in
                 // Handle token refresh and make the subsequent request
                 return self.handleTokenRefreshAndRequest(urlRequest)
                     .mapError { error in
