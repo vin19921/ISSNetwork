@@ -174,10 +174,27 @@ public class NetworkManager: Requestable {
                                 // Update the headers with the new appToken
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+                                
+                                self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
+                                    .sink(receiveCompletion: { completion in
+                                        switch completion {
+                                        case .finished:
+                                            // Handle successful completion
+                                            break
+                                        case .failure(let error):
+                                            // Handle the error here
+                                            print("API Request Failure: \(error)")
+                                        }
+                                    }, receiveValue: { response in
+                                        // Handle the successful response here
+                                        print("API Request Success: \(response)")
+                                    })
+                                    .store(in: &cancellables)
+
 
                             } else {
                                 // Handle the absence of the appToken
-                                throw APIError.refreshTokenError("Missing appToken")
+//                                throw APIError.refreshTokenError("Missing appToken")
                             }
                         })
                         .store(in: &self.cancellables)
