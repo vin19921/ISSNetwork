@@ -104,7 +104,7 @@ public class NetworkManager: Requestable {
                     print("Token Expired ::: \(response.statusCode)")
                     return Just(())
                         .flatMap { _ -> AnyPublisher<T, APIError> in
-                            return self.fetchRefreshTokenRequest()
+                            self.fetchRefreshTokenRequest()
                                 .flatMap { refreshTokenResponse in
                                     if let appToken = refreshTokenResponse.data.token.appToken {
                                         // Update the headers with the new appToken
@@ -112,7 +112,19 @@ public class NetworkManager: Requestable {
                                         requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
 
                                         // Recall fetchURLResponse with the updated request
-                                        return self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
+                                        return URLSession.shared
+                                            .dataTaskPublisher(for: requestWithNewAccessToken)
+                                            .tryMap { output in
+                                                return output.data
+                                            }
+                                            .decode(type: T.self, decoder: JSONDecoder())
+                                            .mapError { error in
+                                                if let apiError = error as? APIError {
+                                                    return apiError
+                                                }
+                                                return APIError.invalidJSON(String(describing: error.localizedDescription))
+                                            }
+                                            .eraseToAnyPublisher()
                                     } else {
                                         // Handle the absence of the appToken
                                         return Fail(error: APIError.refreshTokenError("Missing appToken"))
@@ -130,7 +142,6 @@ public class NetworkManager: Requestable {
             .switchToLatest()
             .eraseToAnyPublisher()
     }
-
 
 //    func fetchURLResponse<T>(urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
 //        print("Request ::: \(urlRequest)")
