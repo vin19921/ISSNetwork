@@ -117,7 +117,8 @@ public class NetworkManager: Requestable {
                                 UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                                return fetchURLResponse(urlRequest: requestWithNewAccessToken)
+
+                                self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
                             }
                         })
                         .store(in: &self.cancellables)
