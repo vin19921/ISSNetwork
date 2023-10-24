@@ -100,46 +100,38 @@ public class NetworkManager: Requestable {
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-                    // Use map to conditionally handle token refresh asynchronously
-                    print("Token Expired ::: \(response.statusCode)")
-                    return Just(())
-                        .map { _ in
-                            self.fetchRefreshTokenRequest()
-                        }
-                        .tryMap { refreshTokenResponse in
-                            if let appToken = refreshTokenResponse.data.token.appToken {
-                                // Update the headers with the new appToken
-                                var requestWithNewAccessToken = urlRequest
-                                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-
-                                return URLSession.shared
-                                    .dataTaskPublisher(for: requestWithNewAccessToken)
-                                    .tryMap { output in
-                                        return output.data
-                                    }
-                                    .decode(type: T.self, decoder: JSONDecoder())
-                                    .mapError { error in
-                                        if let apiError = error as? APIError {
-                                            return apiError
-                                        }
-                                        return APIError.invalidJSON(String(describing: error.localizedDescription))
-                                    }
-                                    .eraseToAnyPublisher()
-                            } else {
-                                // Handle the absence of the appToken
-                                return Fail(error: APIError.refreshTokenError("Missing appToken"))
-                                    .eraseToAnyPublisher()
-                            }
-                        }
-                        .switchToLatest()
-                        .eraseToAnyPublisher()
+                    // Handle token refresh and subsequent request when authentication error occurs
+                    return try self.handleTokenRefreshAndRequest(urlRequest)
                 }
                 // Continue with the subsequent steps when the response status code is not 401.
-                return Just(output.data)
-                    .setFailureType(to: APIError.self)
-                    .eraseToAnyPublisher()
+                return output.data
             }
-            .switchToLatest()
+            .decode(type: T.self, decoder: JSONDecoder())
+            .mapError { error in
+                if let apiError = error as? APIError {
+                    return apiError
+                }
+                return APIError.invalidJSON(String(describing: error.localizedDescription))
+            }
+            .eraseToAnyPublisher()
+    }
+
+    func handleTokenRefreshAndRequest<T>(_ urlRequest: URLRequest) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+        return self.fetchRefreshTokenRequest()
+            .tryMap { refreshTokenResponse in
+                if let appToken = refreshTokenResponse.data.token.appToken {
+                    // Update the headers with the new appToken
+                    var requestWithNewAccessToken = urlRequest
+                    requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+                    return requestWithNewAccessToken
+                } else {
+                    // Handle the absence of the appToken
+                    throw APIError.refreshTokenError("Missing appToken")
+                }
+            }
+            .flatMap { updatedRequest in
+                return self.fetchURLResponse(urlRequest: updatedRequest)
+            }
             .eraseToAnyPublisher()
     }
 
