@@ -388,13 +388,13 @@ public class NetworkManager: Requestable {
             .map { output in
                 // Print the data for debugging
                 do {
-                    let jsonData = String(data: output.data, encoding: .utf8)
+                    let jsonData = output.data(using: .utf8)
                     print("jsonResponse ::: \n\(jsonData)")
-                    let tokenData = try JSONDecoder().decode(RefreshTokenDataModel.self, from: jsonData)
+                    let tokenData = try JSONDecoder().decode(TokenDataModel.self, from: jsonData)
                         
                     // Access the appToken and refreshToken
-                    let appToken = tokenData.appToken ?? ""
-                    let refreshToken = tokenData.refreshToken ?? ""
+                    let appToken = tokenData.token.appToken ?? ""
+                    let refreshToken = tokenData.token.refreshToken ?? ""
                     UserDefaults.standard.set(appToken, forKey: "accessToken")
                     UserDefaults.standard.set(refreshToken, forKey: "refreshToken")
                     print("appToken ::: \(appToken)")
