@@ -336,7 +336,7 @@ public class NetworkManager: Requestable {
         refreshToken: @escaping () -> AnyPublisher<RefreshTokenResponse, APIError>
     ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         print("Request ::: \(urlRequest)")
-        self.urlRequest = urlRequest
+//        self.urlRequest = urlRequest
         return URLSession.shared
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
@@ -357,7 +357,7 @@ public class NetworkManager: Requestable {
                 }
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
             }
-            .catch { (error: Error) -> AnyPublisher<T, APIError> in
+            .catch { (error: APIError) -> AnyPublisher<T, APIError> in
                 if case APIError.authenticationError = error {
                     return refreshToken()
                         .flatMap { _ in
