@@ -183,8 +183,8 @@ public class NetworkManager: Requestable {
                                             // Handle the error here
                                             print("Refresh Token Failure: \(error)")
                                         }
-                                    }, receiveValue: { response in
-                                        print("response : \(response)")
+                                    }, receiveValue: { a in
+                                        print("response : \(a)")
                                     })
                                     .store(in: &self.cancellables)
 //                                var requestWithNewAccessToken = urlRequest
