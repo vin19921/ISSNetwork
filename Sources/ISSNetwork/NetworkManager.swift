@@ -177,19 +177,20 @@ public class NetworkManager: Requestable {
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
                                 
-                                return URLSession.shared
-                                    .dataTaskPublisher(for: requestWithNewAccessToken)
-                                    .tryMap { output in
-                                        return output.data
-                                    }
-                                    .decode(type: T.self, decoder: JSONDecoder())
-                                    .mapError { error in
-                                        if let apiError = error as? APIError {
-                                            return apiError
-                                        }
-                                        return APIError.invalidJSON(String(describing: error.localizedDescription))
-                                    }
-                                    .eraseToAnyPublisher()
+                                return fetchURLResponse(urlRequest: requestWithNewAccessToken)
+//                                return URLSession.shared
+//                                    .dataTaskPublisher(for: requestWithNewAccessToken)
+//                                    .tryMap { output in
+//                                        return output.data
+//                                    }
+//                                    .decode(type: T.self, decoder: JSONDecoder())
+//                                    .mapError { error in
+//                                        if let apiError = error as? APIError {
+//                                            return apiError
+//                                        }
+//                                        return APIError.invalidJSON(String(describing: error.localizedDescription))
+//                                    }
+//                                    .eraseToAnyPublisher()
                                 
                                 
 //                                self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
