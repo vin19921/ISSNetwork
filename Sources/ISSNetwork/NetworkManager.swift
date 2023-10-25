@@ -367,14 +367,14 @@ public class NetworkManager: Requestable {
 //                        .map(\.data)
                         .flatMap { response -> AnyPublisher<T, APIError> in
                             // Update the urlRequest with the new token
-                            let appToken = response.data.token.appToken ?? ""
-                            let refreshToken = response.data.token.refreshToken ?? ""
-                            UserDefaults.standard.set(appToken, forKey: "accessToken")
-                            UserDefaults.standard.set(refreshToken, forKey: "refreshToken")
-                            print("appToken ::: \(appToken)")
-                            print("refreshToken ::: \(refreshToken)")
+                            let newAppToken = response.data.token.appToken ?? ""
+                            let newRefreshToken = response.data.token.refreshToken ?? ""
+                            UserDefaults.standard.set(newAppToken, forKey: "accessToken")
+                            UserDefaults.standard.set(newRefreshToken, forKey: "refreshToken")
+                            print("appToken ::: \(newAppToken)")
+                            print("refreshToken ::: \(newRefreshToken)")
                             var updatedRequest = urlRequest
-                            updatedRequest.setValue(appToken, forHTTPHeaderField: "x-access-token")
+                            updatedRequest.setValue(newAppToken, forHTTPHeaderField: "x-access-token")
                             
                             // Retry the network request with the updated request
                             return self.fetchURLResponse(urlRequest: updatedRequest, refreshToken: refreshToken)
@@ -398,6 +398,7 @@ public class NetworkManager: Requestable {
         var request = URLRequest(url: refreshTokenURL)
         request.httpMethod = "POST"
         request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
+        print("Request ::: \(request)")
         
         return URLSession.shared.dataTaskPublisher(for: request)
 //            .map(\.data)
