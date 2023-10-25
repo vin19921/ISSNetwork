@@ -45,14 +45,21 @@ public class NetworkManager: Requestable {
                     .setFailureType(to: APIError.self)
                     .eraseToAnyPublisher()
             }
-            .catch { error -> AnyPublisher<T, APIError> in
-                if case APIError.unauthorized = error {
-                    // Handle token refresh here
-                    return self.handleTokenRefreshAndRetry(request: req)
+            .mapError { error -> APIError in
+                if let apiError = error as? APIError {
+                    return apiError
                 } else {
-                    return Fail(error: error).eraseToAnyPublisher()
+                    return APIError.invalidJSON(String(describing: error.localizedDescription))
                 }
             }
+//            .catch { error -> AnyPublisher<T, APIError> in
+//                if case APIError.unauthorized = error {
+//                    // Handle token refresh here
+//                    return self.handleTokenRefreshAndRetry(request: req)
+//                } else {
+//                    return Fail(error: error).eraseToAnyPublisher()
+//                }
+//            }
     }
 
     private func handleTokenRefreshAndRetry<T>(request: NetworkRequest) -> AnyPublisher<T, APIError>
@@ -60,23 +67,17 @@ public class NetworkManager: Requestable {
     {
         // Implement your token refresh logic here.
         // This can include making a refresh token request and updating the access token.
-        return self.fetchRefreshTokenRequest()
-            .flatMap { response -> AnyPublisher<T, APIError> in
+        self.fetchRefreshTokenRequest()
+            .flatMap { response in
                 if let appToken = response.data.token.appToken {
-                    UserDefaults.standard.set(appToken, forKey: "accessToken")
+                    UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
+                    UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
                     var requestWithNewAccessToken = request
                     requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
                     return self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
                 } else {
                     return Fail<T, APIError>(error: .refreshTokenError("Missing appToken"))
                         .eraseToAnyPublisher()
-                }
-            }
-            .mapError { error -> APIError in
-                if let apiError = error as? APIError {
-                    return apiError
-                } else {
-                    return .invalidJSON(String(describing: error.localizedDescription))
                 }
             }
             .eraseToAnyPublisher()
