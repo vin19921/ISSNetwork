@@ -360,10 +360,10 @@ public class NetworkManager: Requestable {
             .catch { (error: APIError) -> AnyPublisher<T, APIError> in
                 if case APIError.authenticationError = error {
                     return refreshToken()
-                        .flatMap { a in
-                            print(a)
-                            self.fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
-                        }
+//                        .flatMap { a in
+//                            print(a)
+//                            self.fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
+//                        }
                         .eraseToAnyPublisher()
                 } else {
                     return Fail(error: error).eraseToAnyPublisher()
@@ -386,7 +386,7 @@ public class NetworkManager: Requestable {
         
         return URLSession.shared.dataTaskPublisher(for: request)
 //            .map(\.data)
-            .tryMap { output in
+            .flatMap { output in
                 // Print the data for debugging
 //                if let jsonData = output.data(using: .utf8) {
 //                    do {
