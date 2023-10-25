@@ -342,9 +342,16 @@ public class NetworkManager: Requestable {
                     return refreshToken()
                         .flatMap { _ in
                             URLSession.shared.dataTaskPublisher(for: urlRequest)
-                        }
-                        .tryMap { refreshedOutput in
-                            return refreshedOutput.data
+                                .tryMap { refreshedOutput in
+                                    return refreshedOutput.data
+                                }
+                                .mapError { error in
+                                    if let apiError = error as? APIError {
+                                        return apiError
+                                    }
+                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+                                }
+                                .eraseToAnyPublisher()
                         }
                         .eraseToAnyPublisher()
                 } else {
