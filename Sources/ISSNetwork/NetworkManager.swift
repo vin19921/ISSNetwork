@@ -201,22 +201,22 @@ public class NetworkManager: Requestable {
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
 
                     return AuthManager.shared.refreshToken()
-                        .flatMap { refreshTokenResponse in
-                            // Update the request with the new token and retry the request
-                            
-                            if let appToken = refreshTokenResponse.data.token.appToken {
-                                var requestWithNewAccessToken = urlRequest
-                                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                                return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
-                            } else {
+                        .tryMap { refreshTokenResponse in
+                            // Update the request with the new token
+                            guard let appToken = refreshTokenResponse.data.token.appToken else {
                                 throw APIError.refreshTokenError("refreshTokenError")
                             }
-                            
-                        }
-                        .tryMap { newOutput in
+
+                            var requestWithNewAccessToken = urlRequest
+                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+
+                            // Perform the network request with the updated request
+                            let newOutput = try URLSession.shared.data(for: requestWithNewAccessToken)
+
                             // Continue with the subsequent steps when the response status code is not 401.
                             return newOutput.data
                         }
+                        .eraseToAnyPublisher()
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
                     return output.data

@@ -36,12 +36,20 @@ final class AuthManager {
     }
 
     func requestRefreshToken(_ request: NetworkRequest) -> AnyPublisher<RefreshTokenResponse, Error> {
+        // Create a URLRequest using the URL from your NetworkRequest
+        guard let url = request.url else {
+            return Fail(error: APIError.invalidURL("Invalid URL")).eraseToAnyPublisher()
+        }
+        
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = request.httpMethod
+        urlRequest.allHTTPHeaderFields = request.headers
+        
         // Implement the network request logic here using Combine's URLSession dataTaskPublisher
         // This function should return a Publisher that emits a RefreshTokenResponse or an error.
-        // Handle the response and error cases here.
         
-        // For example, you might use URLSession like this:
-        return URLSession.shared.dataTaskPublisher(for: request.buildURLRequest(with: request.url))
+        return URLSession.shared.dataTaskPublisher(for: urlRequest)
+            .map(\.data)
             .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
             .mapError { $0 as Error }
             .eraseToAnyPublisher()
