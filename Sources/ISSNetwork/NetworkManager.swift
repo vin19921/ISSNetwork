@@ -174,12 +174,25 @@ public class NetworkManager: Requestable {
                                 UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
                                 UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
                                 // Update the headers with the new appToken
-                                var requestWithNewAccessToken = urlRequest
-                                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                                let publisher: AnyPublisher<T, Error> = self.fetchWithNewToken(urlRequest: requestWithNewAccessToken)
-
-                                
-                                return publisher
+                                self.requestWithNewToken(urlRequest)
+                                    .sink(receiveCompletion: { completion in
+                                        switch completion {
+                                        case .finished:
+                                            break // No error to handle in this case.
+                                        case .failure(let error):
+                                            // Handle the error here
+                                            print("Refresh Token Failure: \(error)")
+                                        }
+                                    }, receiveValue: { response in
+                                        print("response : \(response)")
+                                    })
+                                    .store(in: &self.cancellables)
+//                                var requestWithNewAccessToken = urlRequest
+//                                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+//                                let publisher: AnyPublisher<T, Error> = self.fetchWithNewToken(urlRequest: requestWithNewAccessToken)
+//
+//
+//                                return publisher
                             } else {
                                 // Handle the absence of the appToken
                                 return APIError.refreshTokenError("Missing appToken")
