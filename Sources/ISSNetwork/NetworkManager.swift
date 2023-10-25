@@ -367,7 +367,7 @@ public class NetworkManager: Requestable {
 //                        .map(\.data)
                         .flatMap { response -> AnyPublisher<T, APIError> in
                             // Update the urlRequest with the new token
-                            var updatedRequest = self.urlRequest
+                            var updatedRequest = urlRequest
                             updatedRequest?.setValue(response.data.token.appToken, forHTTPHeaderField: "Authorization")
                             
                             guard let newRequest = updatedRequest else {
