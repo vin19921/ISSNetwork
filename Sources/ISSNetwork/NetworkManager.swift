@@ -207,11 +207,10 @@ public class NetworkManager: Requestable {
                             requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(refreshTokenResponse.data.token.appToken, forKey: "x-access-token")
 
                             return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
-                                .tryMap { newOutput in
-                                    // Continue with the subsequent steps when the response status code is not 401.
-                                    return newOutput.data
-                                }
-                                .eraseToAnyPublisher()
+                        }
+                        .tryMap { newOutput in
+                            // Continue with the subsequent steps when the response status code is not 401.
+                            return newOutput.data
                         }
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
