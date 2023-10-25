@@ -176,7 +176,7 @@ public class NetworkManager: Requestable {
                                 // Update the headers with the new appToken
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                                let publisher: AnyPublisher<T, APIError> = self.fetchWithNewToken(urlRequest: requestWithNewAccessToken)
+                                let publisher: AnyPublisher<T, Error> = self.fetchWithNewToken(urlRequest: requestWithNewAccessToken)
 
                                 
                                 return publisher
