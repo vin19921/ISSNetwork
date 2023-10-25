@@ -375,7 +375,7 @@ public class NetworkManager: Requestable {
                 .eraseToAnyPublisher()
         }
         
-        var request = URLRequest(url: url)
+        var request = URLRequest(url: refreshTokenURL)
         request.httpMethod = "POST"
         request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
         
