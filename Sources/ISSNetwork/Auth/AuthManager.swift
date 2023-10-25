@@ -41,7 +41,7 @@ final class AuthManager {
         // Handle the response and error cases here.
         
         // For example, you might use URLSession like this:
-        return URLSession.shared.dataTaskPublisher(for: request)
+        return URLSession.shared.dataTaskPublisher(for: request.buildURLRequest(with: request.url))
             .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
             .mapError { $0 as Error }
             .eraseToAnyPublisher()
