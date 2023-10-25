@@ -380,7 +380,10 @@ public class NetworkManager: Requestable {
         request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
         
         return URLSession.shared.dataTaskPublisher(for: request)
-            .map(\.data)
+//            .map(\.data)
+            .tryMap { output in
+                print(output.data)
+            }
             .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
