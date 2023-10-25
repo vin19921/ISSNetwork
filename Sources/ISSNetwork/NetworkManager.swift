@@ -22,8 +22,8 @@ public class NetworkManager: Requestable {
     private let session: URLSession
     private let baseURL: String = NetworkConfiguration.environment.baseURL
     private var cancellables = Set<AnyCancellable>()
-    private var urlRequest = URLRequest()
-    private var updatedURLRequest = URLRequest()
+//    private var urlRequest: URLRequest = ()
+//    private var updatedURLRequest: URLRequest
 
     public required init(monitor: NetworkConnectivity = ISSNetworkGateway.createNetworkMonitor(), session: URLSession = URLSession.shared) {
         networkMonitor = monitor
@@ -361,7 +361,7 @@ public class NetworkManager: Requestable {
                 if case APIError.authenticationError = error {
                     return refreshToken()
                         .flatMap { _ in
-                            self.fetchURLResponse(urlRequest: self.updatedURLRequest, refreshToken: refreshToken)
+                            self.fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
                         }
                         .eraseToAnyPublisher()
                 } else {
