@@ -329,10 +329,10 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-    func fetchURLResponse<T>(
+    func fetchURLResponse<T, E>(
         urlRequest: URLRequest,
-        refreshToken: () -> AnyPublisher<RefreshTokenResponse, APIError>
-    ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+        refreshToken: () -> AnyPublisher<RefreshTokenResponse, E>
+    ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable, E: Error {
         print("Request ::: \(urlRequest)")
 
         let publisher: AnyPublisher<T, APIError> = URLSession.shared.dataTaskPublisher(for: urlRequest)
