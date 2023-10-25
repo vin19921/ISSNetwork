@@ -11,9 +11,6 @@ import Foundation
 final class AuthManager {
     static let shared = AuthManager()
 
-    var accessToken: String?
-    var refreshToken: String?
-
     func refreshToken() -> AnyPublisher<RefreshTokenResponse, Error> {
         let accessToken = UserDefaults.standard.string(forKey: "accessToken") ?? ""
         let refreshToken = UserDefaults.standard.string(forKey: "refreshToken") ?? ""
@@ -44,8 +41,7 @@ final class AuthManager {
         // Handle the response and error cases here.
         
         // For example, you might use URLSession like this:
-        return URLSession.shared.dataTaskPublisher(for: request.urlRequest())
-            .map(\.data)
+        return URLSession.shared.dataTaskPublisher(for: request)
             .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
             .mapError { $0 as Error }
             .eraseToAnyPublisher()
