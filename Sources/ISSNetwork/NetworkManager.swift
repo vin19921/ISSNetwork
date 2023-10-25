@@ -178,7 +178,7 @@ public class NetworkManager: Requestable {
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
                                 
                                 return URLSession.shared
-                                    .dataTaskPublisher(for: urlRequest)
+                                    .dataTaskPublisher(for: requestWithNewAccessToken)
                                     .tryMap { output in
                                         return output.data
                                     }
