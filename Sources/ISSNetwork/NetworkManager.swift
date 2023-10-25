@@ -411,16 +411,16 @@ public class NetworkManager: Requestable {
 //                }
                 do {
                     let jsonData = String(data: output.data, encoding: .utf8)
-                    print("jsonResponse ::: \n\(jsonData)")
-                    let tokenData = try JSONDecoder().decode(RefreshTokenResponse.self, from: jsonData)
-
-                    // Access the appToken and refreshToken
-                    let appToken = tokenData.data.token.appToken ?? ""
-                    let refreshToken = tokenData.data.token.refreshToken ?? ""
-                    UserDefaults.standard.set(appToken, forKey: "accessToken")
-                    UserDefaults.standard.set(refreshToken, forKey: "refreshToken")
-                    print("appToken ::: \(appToken)")
-                    print("refreshToken ::: \(refreshToken)")
+                    print(jsonData)
+//                    let tokenData = try JSONDecoder().decode(RefreshTokenResponse.self, from: jsonData)
+//
+//                    // Access the appToken and refreshToken
+//                    let appToken = tokenData.data.token.appToken ?? ""
+//                    let refreshToken = tokenData.data.token.refreshToken ?? ""
+//                    UserDefaults.standard.set(appToken, forKey: "accessToken")
+//                    UserDefaults.standard.set(refreshToken, forKey: "refreshToken")
+//                    print("appToken ::: \(appToken)")
+//                    print("refreshToken ::: \(refreshToken)")
 //                    self.updatedURLRequest = self.urlRequest
 //                    self.updatedURLRequest.setValue(appToken, forHTTPHeaderField: "x-access-token")
 
