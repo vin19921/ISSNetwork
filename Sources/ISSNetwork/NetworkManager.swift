@@ -39,7 +39,7 @@ public class NetworkManager: Requestable {
             return AnyPublisher(Fail<T, APIError>(error: APIError.badURL("Invalid Url")))
         }
         // We use the dataTaskPublisher from the URLSession which gives us a publisher to play around with.
-        return fetchURLResponse(urlRequest: req.buildURLRequest(with: url), refreshToken: refreshToken())
+        return fetchURLResponse(urlRequest: req.buildURLRequest(with: url), refreshToken: refreshToken)
 //            .flatMap { (result: T) -> AnyPublisher<T, APIError> in
 //                return Just(result)
 //                    .setFailureType(to: APIError.self)
@@ -331,7 +331,7 @@ public class NetworkManager: Requestable {
 
     func fetchURLResponse<T>(
         urlRequest: URLRequest,
-        refreshToken: @escaping () -> AnyPublisher<RefreshTokenResponse, APIError>
+        refreshToken: @escaping () -> AnyPublisher<RefreshTokenResponse, Error>
     ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         return URLSession.shared
             .dataTaskPublisher(for: urlRequest)
@@ -367,7 +367,7 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-    func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
+    func refreshToken() -> AnyPublisher<RefreshTokenResponse, Error> {
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") as? String ?? ""
         
         guard let refreshTokenURL = URL(string: NetworkConfiguration.APIEndpoint.refreshToken.path) else {
