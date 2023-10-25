@@ -409,24 +409,24 @@ public class NetworkManager: Requestable {
 //                } else {
 //                    print("Failed to convert JSON string to Data")
 //                }
-//                do {
-//                    let jsonData = String(data: output.data, encoding: .utf8)
-//                    print("jsonResponse ::: \n\(jsonData)")
-//                    let tokenData = try JSONDecoder().decode(RefreshTokenDataModel.self, from: jsonData)
-//
-//                    // Access the appToken and refreshToken
-//                    let appToken = tokenData.appToken ?? ""
-//                    let refreshToken = tokenData.refreshToken ?? ""
-//                    UserDefaults.standard.set(appToken, forKey: "accessToken")
-//                    UserDefaults.standard.set(refreshToken, forKey: "refreshToken")
-//                    print("appToken ::: \(appToken)")
-//                    print("refreshToken ::: \(refreshToken)")
+                do {
+                    let jsonData = String(data: output.data, encoding: .utf8)
+                    print("jsonResponse ::: \n\(jsonData)")
+                    let tokenData = try JSONDecoder().decode(RefreshTokenResponse.self, from: jsonData)
+
+                    // Access the appToken and refreshToken
+                    let appToken = tokenData.data.token.appToken ?? ""
+                    let refreshToken = tokenData.data.token.refreshToken ?? ""
+                    UserDefaults.standard.set(appToken, forKey: "accessToken")
+                    UserDefaults.standard.set(refreshToken, forKey: "refreshToken")
+                    print("appToken ::: \(appToken)")
+                    print("refreshToken ::: \(refreshToken)")
 //                    self.updatedURLRequest = self.urlRequest
 //                    self.updatedURLRequest.setValue(appToken, forHTTPHeaderField: "x-access-token")
-//
-//                } catch {
-//                    print("Error decoding JSON: \(error)")
-//                }
+
+                } catch {
+                    print("Error decoding JSON: \(error)")
+                }
 //                print(output.data)
                 return output.data
             }
