@@ -40,18 +40,18 @@ public class NetworkManager: Requestable {
         }
         // We use the dataTaskPublisher from the URLSession which gives us a publisher to play around with.
         return fetchURLResponse(urlRequest: req.buildURLRequest(with: url))
-            .flatMap { (result: T) -> AnyPublisher<T, APIError> in
-                return Just(result)
-                    .setFailureType(to: APIError.self)
-                    .eraseToAnyPublisher()
-            }
-            .mapError { error -> APIError in
-                if let apiError = error as? APIError {
-                    return apiError
-                } else {
-                    return APIError.invalidJSON(String(describing: error.localizedDescription))
-                }
-            }
+//            .flatMap { (result: T) -> AnyPublisher<T, APIError> in
+//                return Just(result)
+//                    .setFailureType(to: APIError.self)
+//                    .eraseToAnyPublisher()
+//            }
+//            .mapError { error -> APIError in
+//                if let apiError = error as? APIError {
+//                    return apiError
+//                } else {
+//                    return APIError.invalidJSON(String(describing: error.localizedDescription))
+//                }
+//            }
 //            .catch { error -> AnyPublisher<T, APIError> in
 //                if case APIError.unauthorized = error {
 //                    // Handle token refresh here
@@ -62,26 +62,26 @@ public class NetworkManager: Requestable {
 //            }
     }
 
-    private func handleTokenRefreshAndRetry<T>(request: NetworkRequest) -> AnyPublisher<T, APIError>
-        where T: Decodable, T: Encodable
-    {
-        // Implement your token refresh logic here.
-        // This can include making a refresh token request and updating the access token.
-        self.fetchRefreshTokenRequest()
-            .flatMap { response in
-                if let appToken = response.data.token.appToken {
-                    UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
-                    UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
-                    var requestWithNewAccessToken = request
-                    requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                    return self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
-                } else {
-                    return Fail<T, APIError>(error: .refreshTokenError("Missing appToken"))
-                        .eraseToAnyPublisher()
-                }
-            }
-            .eraseToAnyPublisher()
-    }
+//    private func handleTokenRefreshAndRetry<T>(request: NetworkRequest) -> AnyPublisher<T, APIError>
+//        where T: Decodable, T: Encodable
+//    {
+//        // Implement your token refresh logic here.
+//        // This can include making a refresh token request and updating the access token.
+//        self.fetchRefreshTokenRequest()
+//            .flatMap { response in
+//                if let appToken = response.data.token.appToken {
+//                    UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
+//                    UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
+//                    var requestWithNewAccessToken = request
+//                    requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+//                    return self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
+//                } else {
+//                    return Fail<T, APIError>(error: .refreshTokenError("Missing appToken"))
+//                        .eraseToAnyPublisher()
+//                }
+//            }
+//            .eraseToAnyPublisher()
+//    }
 
 
     public func requestRefreshToken<T>(_ req: NetworkRequest) -> AnyPublisher<T, APIError>
