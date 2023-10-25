@@ -331,7 +331,7 @@ public class NetworkManager: Requestable {
 
     func fetchURLResponse<T>(
         urlRequest: URLRequest,
-        refreshToken: () -> AnyPublisher<Void, APIError>
+        refreshToken: @escaping () -> AnyPublisher<RefreshTokenResponse, APIError>
     ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         return URLSession.shared
             .dataTaskPublisher(for: urlRequest)
@@ -346,21 +346,23 @@ public class NetworkManager: Requestable {
 
                 return output.data
             }
-            .flatMap { data in
-                Result<T, APIError> { try JSONDecoder().decode(T.self, from: data) }
-                    .publisher
-                    .eraseToAnyPublisher()
+            .decode(type: T.self, decoder: JSONDecoder())
+            .mapError { error in
+                if let apiError = error as? APIError {
+                    return apiError
+                }
+                return APIError.invalidJSON(String(describing: error.localizedDescription))
             }
-            .retryWhen { errors in
-                errors
-                    .enumerated()
-                    .flatMap { attempt, error -> AnyPublisher<Void, APIError> in
-                        if case APIError.authenticationError = error, attempt < 1 {
-                            return refreshToken()
+            .catch { error -> AnyPublisher<T, APIError> in
+                if case APIError.authenticationError = error {
+                    return refreshToken()
+                        .flatMap { _ in
+                            fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
                         }
-                        return Fail<Void, APIError>(error: error)
-                            .eraseToAnyPublisher()
-                    }
+                        .eraseToAnyPublisher()
+                } else {
+                    return Fail(error: error).eraseToAnyPublisher()
+                }
             }
             .eraseToAnyPublisher()
     }
