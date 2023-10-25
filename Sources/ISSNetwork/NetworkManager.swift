@@ -190,6 +190,7 @@ public class NetworkManager: Requestable {
                                     }, receiveValue: {  (response: T) in
                                         // Handle the successful response here
                                         print("API Request Success: \(response)")
+                                        return response.data
                                     })
                                     .store(in: &self.cancellables)
 
