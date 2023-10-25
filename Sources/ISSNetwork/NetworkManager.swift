@@ -22,6 +22,7 @@ public class NetworkManager: Requestable {
     private let session: URLSession
     private let baseURL: String = NetworkConfiguration.environment.baseURL
     private var cancellables = Set<AnyCancellable>()
+    private var urlRequest: URLRequest
     private var updatedURLRequest: URLRequest
 
     public required init(monitor: NetworkConnectivity = ISSNetworkGateway.createNetworkMonitor(), session: URLSession = URLSession.shared) {
@@ -335,6 +336,7 @@ public class NetworkManager: Requestable {
         refreshToken: @escaping () -> AnyPublisher<RefreshTokenResponse, APIError>
     ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         print("Request ::: \(urlRequest)")
+        self.urlRequest = urlRequest
         return URLSession.shared
             .dataTaskPublisher(for: urlRequest)
             .tryMap { output in
@@ -395,8 +397,8 @@ public class NetworkManager: Requestable {
                     let refreshToken = tokenData.token.refreshToken
                     print("appToken ::: \(appToken)")
                     print("refreshToken ::: \(refreshToken)")
-                    updatedURLRequest = urlRequest
-                    updatedURLRequest.setValue(appToken, forHTTPHeaderField: "x-access-token")
+                    self.updatedURLRequest = self.urlRequest
+                    self.updatedURLRequest.setValue(appToken, forHTTPHeaderField: "x-access-token")
 
                 } catch {
                     print("Error decoding JSON: \(error)")
