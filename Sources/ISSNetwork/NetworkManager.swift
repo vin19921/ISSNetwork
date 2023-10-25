@@ -303,35 +303,35 @@ public class NetworkManager: Requestable {
 //            .eraseToAnyPublisher()
 //    }
 
-    func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
-        let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
-        let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") ?? ""
-        print("accessToken : \(accessToken)")
-        print("refreshToken : \(refreshToken)")
-        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
-                                     headers: ["x-access-token": "\(refreshToken)"],
-                                     httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
-        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = self.requestRefreshToken(request)
-
-        return sentRequest
-            .mapError { $0 as Error }
-            .eraseToAnyPublisher()
-    }
-
-    func fetchWithNewToken<T>(urlRequest: URLRequest) -> AnyPublisher<T, Error> where T: Decodable, T: Encodable {
-        let accessToken = UserDefaults.standard.string(forKey: "accessToken") ?? ""
-        var requestWithNewAccessToken = urlRequest
-        requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(accessToken, forKey: "x-access-token")
-        let sentRequest: AnyPublisher<T, APIError> = self.requestWithNewToken(requestWithNewAccessToken)
-
-        return sentRequest
-            .mapError { $0 as Error }
-            .eraseToAnyPublisher()
-    }
+//    func fetchRefreshTokenRequest() -> AnyPublisher<RefreshTokenResponse, Error> {
+//        let accessToken = UserDefaults.standard.object(forKey: "accessToken") ?? ""
+//        let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") ?? ""
+//        print("accessToken : \(accessToken)")
+//        print("refreshToken : \(refreshToken)")
+//        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
+//                                     headers: ["x-access-token": "\(refreshToken)"],
+//                                     httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
+//        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = self.requestRefreshToken(request)
+//
+//        return sentRequest
+//            .mapError { $0 as Error }
+//            .eraseToAnyPublisher()
+//    }
+//
+//    func fetchWithNewToken<T>(urlRequest: URLRequest) -> AnyPublisher<T, Error> where T: Decodable, T: Encodable {
+//        let accessToken = UserDefaults.standard.string(forKey: "accessToken") ?? ""
+//        var requestWithNewAccessToken = urlRequest
+//        requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(accessToken, forKey: "x-access-token")
+//        let sentRequest: AnyPublisher<T, APIError> = self.requestWithNewToken(requestWithNewAccessToken)
+//
+//        return sentRequest
+//            .mapError { $0 as Error }
+//            .eraseToAnyPublisher()
+//    }
 
     func fetchURLResponse<T>(
         urlRequest: URLRequest,
-        refreshToken: @escaping () -> AnyPublisher<RefreshTokenResponse, Error>
+        refreshToken: @escaping () -> AnyPublisher<RefreshTokenResponse, APIError>
     ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         return URLSession.shared
             .dataTaskPublisher(for: urlRequest)
@@ -367,11 +367,11 @@ public class NetworkManager: Requestable {
             .eraseToAnyPublisher()
     }
 
-    func refreshToken() -> AnyPublisher<RefreshTokenResponse, Error> {
+    func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") as? String ?? ""
         
         guard let refreshTokenURL = URL(string: NetworkConfiguration.APIEndpoint.refreshToken.path) else {
-            return Fail<RefreshTokenResponse, Error>(error: APIError.refreshTokenError("Invalid refresh token URL"))
+            return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Invalid refresh token URL"))
                 .eraseToAnyPublisher()
         }
         
