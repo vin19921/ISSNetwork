@@ -361,10 +361,8 @@ public class NetworkManager: Requestable {
                 if case APIError.authenticationError = error {
                     return refreshToken()
                         .flatMap { response in
-                            var updatedRequest = urlRequest
-                            updatedRequest.setValue(response.data.token.appToken, forHTTPHeaderField: "Authorization")
-                            
-                            return fetchURLResponse(urlRequest: updatedRequest, refreshToken: refreshToken)
+                            print(response)
+                            self.fetchURLResponse(urlRequest: self.updatedURLRequest, refreshToken: refreshToken)
                         }
                         .eraseToAnyPublisher()
                 } else {
@@ -388,8 +386,8 @@ public class NetworkManager: Requestable {
         
         return URLSession.shared.dataTaskPublisher(for: request)
 //            .map(\.data)
-//            .map { output in
-//                // Print the data for debugging
+            .tryMap { output in
+                // Print the data for debugging
 //                if let jsonData = output.data(using: .utf8) {
 //                    do {
 //                        let tokenData = try JSONDecoder().decode(RefreshTokenResponse.self, from: jsonData)
@@ -412,27 +410,27 @@ public class NetworkManager: Requestable {
 //                } else {
 //                    print("Failed to convert JSON string to Data")
 //                }
-////                do {
-////                    let jsonData = String(data: output.data, encoding: .utf8)
-////                    print("jsonResponse ::: \n\(jsonData)")
-////                    let tokenData = try JSONDecoder().decode(RefreshTokenDataModel.self, from: jsonData)
-////
-////                    // Access the appToken and refreshToken
-////                    let appToken = tokenData.appToken ?? ""
-////                    let refreshToken = tokenData.refreshToken ?? ""
-////                    UserDefaults.standard.set(appToken, forKey: "accessToken")
-////                    UserDefaults.standard.set(refreshToken, forKey: "refreshToken")
-////                    print("appToken ::: \(appToken)")
-////                    print("refreshToken ::: \(refreshToken)")
-////                    self.updatedURLRequest = self.urlRequest
-////                    self.updatedURLRequest.setValue(appToken, forHTTPHeaderField: "x-access-token")
-////
-////                } catch {
-////                    print("Error decoding JSON: \(error)")
-////                }
-////                print(output.data)
-//                return output.data
-//            }
+//                do {
+//                    let jsonData = String(data: output.data, encoding: .utf8)
+//                    print("jsonResponse ::: \n\(jsonData)")
+//                    let tokenData = try JSONDecoder().decode(RefreshTokenDataModel.self, from: jsonData)
+//
+//                    // Access the appToken and refreshToken
+//                    let appToken = tokenData.appToken ?? ""
+//                    let refreshToken = tokenData.refreshToken ?? ""
+//                    UserDefaults.standard.set(appToken, forKey: "accessToken")
+//                    UserDefaults.standard.set(refreshToken, forKey: "refreshToken")
+//                    print("appToken ::: \(appToken)")
+//                    print("refreshToken ::: \(refreshToken)")
+//                    self.updatedURLRequest = self.urlRequest
+//                    self.updatedURLRequest.setValue(appToken, forHTTPHeaderField: "x-access-token")
+//
+//                } catch {
+//                    print("Error decoding JSON: \(error)")
+//                }
+//                print(output.data)
+                return output.data
+            }
 //            .tryMap { data in
 //                guard let response = data.response as? HTTPURLResponse else {
 //                    throw APIError.invalidJSON("Invalid response")
@@ -444,17 +442,6 @@ public class NetworkManager: Requestable {
 //
 //                return data.data
 //            }
-            .tryMap { data, response in
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    throw APIError.invalidResponse("Invalid response")
-                }
-                
-                guard (200 ..< 300) ~= httpResponse.statusCode else {
-                    throw APIError.serverError(code: httpResponse.statusCode, error: "Server error")
-                }
-                
-                return data
-            }
             .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
