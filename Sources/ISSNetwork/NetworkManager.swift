@@ -60,17 +60,23 @@ public class NetworkManager: Requestable {
     {
         // Implement your token refresh logic here.
         // This can include making a refresh token request and updating the access token.
-        self.fetchRefreshTokenRequest()
-            .flatMap { response in
+        return self.fetchRefreshTokenRequest()
+            .flatMap { response -> AnyPublisher<T, APIError> in
                 if let appToken = response.data.token.appToken {
-                    UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
-                    UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
+                    UserDefaults.standard.set(appToken, forKey: "accessToken")
                     var requestWithNewAccessToken = request
                     requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
                     return self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
                 } else {
                     return Fail<T, APIError>(error: .refreshTokenError("Missing appToken"))
                         .eraseToAnyPublisher()
+                }
+            }
+            .mapError { error -> APIError in
+                if let apiError = error as? APIError {
+                    return apiError
+                } else {
+                    return .invalidJSON(String(describing: error.localizedDescription))
                 }
             }
             .eraseToAnyPublisher()
