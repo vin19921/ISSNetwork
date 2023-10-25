@@ -375,7 +375,7 @@ public class NetworkManager: Requestable {
 //                            }
                             
                             // Retry the network request with the updated request
-                            return self.fetchURLResponse(urlRequest: newRequest, refreshToken: refreshToken)
+                            return self.fetchURLResponse(urlRequest: updatedRequest, refreshToken: refreshToken)
                         }
                         .eraseToAnyPublisher()
                 } else {
