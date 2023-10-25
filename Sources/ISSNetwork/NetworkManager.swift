@@ -368,7 +368,7 @@ public class NetworkManager: Requestable {
                         .flatMap { response -> AnyPublisher<T, APIError> in
                             // Update the urlRequest with the new token
                             var updatedRequest = urlRequest
-                            updatedRequest?.setValue(response.data.token.appToken, forHTTPHeaderField: "Authorization")
+                            updatedRequest.setValue(response.data.token.appToken, forHTTPHeaderField: "x-access-token")
                             
                             guard let newRequest = updatedRequest else {
                                 return Fail(error: APIError.invalidURL("Invalid URL")).eraseToAnyPublisher()
