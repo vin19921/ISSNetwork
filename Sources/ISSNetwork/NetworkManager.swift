@@ -200,48 +200,19 @@ public class NetworkManager: Requestable {
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
 
-                    throw APIError.authenticationError(code: 401, error: "authenticationError")
-//                    self.fetchRefreshTokenRequest()
-//                        .sink(receiveCompletion: { completion in
-//                            switch completion {
-//                            case .finished:
-//                                break // No error to handle in this case.
-//                            case .failure(let error):
-//                                // Handle the error here
-//                                print("Refresh Token Failure: \(error)")
-//                            }
-//                        }, receiveValue: { response in
-//                            // Handle the successful response here
-//                            print("Refresh Token Success: \(response)")
-//                            if let appToken = response.data.token.appToken {
-//                                UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
-//                                UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
-//                                // Update the headers with the new appToken
-//                                self.requestWithNewToken(urlRequest)
-//                                    .sink(receiveCompletion: { completion in
-//                                        switch completion {
-//                                        case .finished:
-//                                            break // No error to handle in this case.
-//                                        case .failure(let error):
-//                                            // Handle the error here
-//                                            print("Refresh Token Failure: \(error)")
-//                                        }
-//                                    }, receiveValue: { a in
-//                                        print("response : \(a)")
-//                                    })
-//                                    .store(in: &self.cancellables)
-////                                var requestWithNewAccessToken = urlRequest
-////                                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-////                                let publisher: AnyPublisher<T, Error> = self.fetchWithNewToken(urlRequest: requestWithNewAccessToken)
-////
-////
-////                                return publisher
-//                            } else {
-//                                // Handle the absence of the appToken
-//                                return APIError.refreshTokenError("Missing appToken")
-//                            }
-//                        })
-//                        .store(in: &self.cancellables)
+                    return AuthManager.shared.refreshToken()
+                        .flatMap { refreshTokenResponse in
+                            // Update the request with the new token and retry the request
+                            var requestWithNewAccessToken = urlRequest
+                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(refreshTokenResponse.data.token.appToken, forKey: "x-access-token")
+
+                            return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
+                        }
+                        .tryMap { newOutput in
+                            // Continue with the subsequent steps when the response status code is not 401.
+                            return newOutput.data
+                        }
+                        .eraseToAnyPublisher()
 
                 } else {
                     // Continue with the subsequent steps when the response status code is not 401.
