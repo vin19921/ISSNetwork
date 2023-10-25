@@ -351,13 +351,14 @@ public class NetworkManager: Requestable {
                                     }
                                     return APIError.invalidJSON(String(describing: error.localizedDescription))
                                 }
-                                .eraseToAnyPublisher()
                         }
-                        .eraseToAnyPublisher()
                 } else {
-                    return output.data
+                    return Just(output.data)
+                        .setFailureType(to: APIError.self)
+                        .eraseToAnyPublisher()
                 }
             }
+            .switchToLatest() // Flatten the inner publisher
             .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
@@ -372,7 +373,7 @@ public class NetworkManager: Requestable {
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") as? String ?? ""
         
         guard let refreshTokenURL = URL(string: NetworkConfiguration.APIEndpoint.refreshToken.path) else {
-            return Fail<RefreshTokenResponse, Error>(error: APIError.tokenRefreshError("Invalid refresh token URL"))
+            return Fail<RefreshTokenResponse, Error>(error: APIError.refreshTokenError("Invalid refresh token URL"))
                 .eraseToAnyPublisher()
         }
         
