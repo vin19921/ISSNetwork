@@ -203,10 +203,15 @@ public class NetworkManager: Requestable {
                     return AuthManager.shared.refreshToken()
                         .flatMap { refreshTokenResponse in
                             // Update the request with the new token and retry the request
-                            var requestWithNewAccessToken = urlRequest
-                            requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(refreshTokenResponse.data.token.appToken, forKey: "x-access-token")
-
-                            return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
+                            
+                            if let appToken = refreshTokenResponse.data.token.appToken {
+                                var requestWithNewAccessToken = urlRequest
+                                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
+                                return URLSession.shared.dataTaskPublisher(for: requestWithNewAccessToken)
+                            } else {
+                                throw APIError.refreshTokenError("refreshTokenError")
+                            }
+                            
                         }
                         .tryMap { newOutput in
                             // Continue with the subsequent steps when the response status code is not 401.
