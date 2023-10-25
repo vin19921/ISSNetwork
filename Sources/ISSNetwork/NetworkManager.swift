@@ -391,7 +391,7 @@ public class NetworkManager: Requestable {
                 } catch {
                     print("Error decoding JSON: \(error)")
                 }
-                return output.data
+//                print(output.data)
             }
 //            .tryMap { data in
 //                guard let response = data.response as? HTTPURLResponse else {
