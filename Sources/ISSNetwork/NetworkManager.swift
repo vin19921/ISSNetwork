@@ -357,14 +357,15 @@ public class NetworkManager: Requestable {
                 if case APIError.authenticationError = error {
                     return refreshToken()
                         .flatMap { response in
-                            if let appToken = response.data.token.appToken {
-                                UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
+//                            if let appToken = response.data.token.appToken {
+                            let appToken = response.data.token.appToken ?? ""
+                                UserDefaults.standard.set(appToken, forKey: "accessToken")
                                 UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
                                 var requestWithNewAccessToken = request
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
                                 
                                 self.fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
-                            }
+//                            }
                         }
                         .eraseToAnyPublisher()
                 } else {
