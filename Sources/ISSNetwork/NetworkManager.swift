@@ -356,16 +356,9 @@ public class NetworkManager: Requestable {
             .catch { error -> AnyPublisher<T, APIError> in
                 if case APIError.authenticationError = error {
                     return refreshToken()
-                        .flatMap { response in
-//                            if let appToken = response.data.token.appToken {
-                            let appToken = response.data.token.appToken ?? ""
-                                UserDefaults.standard.set(appToken, forKey: "accessToken")
-                                UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
-                                var requestWithNewAccessToken = request
-                                requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                                
-                                self.fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
-//                            }
+                        .flatMap { output in
+                            print(output.data)
+                            self.fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
                         }
                         .eraseToAnyPublisher()
                 } else {
