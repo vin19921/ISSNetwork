@@ -356,8 +356,8 @@ public class NetworkManager: Requestable {
             .catch { error -> AnyPublisher<T, APIError> in
                 if case APIError.authenticationError = error {
                     return refreshToken()
-                        .flatMap { output in
-                            print(output.data)
+                        .flatMap { _ in
+//                            print(output.data)
                             self.fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
                         }
                         .eraseToAnyPublisher()
