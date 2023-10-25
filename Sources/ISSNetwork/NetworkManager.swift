@@ -364,6 +364,19 @@ public class NetworkManager: Requestable {
 //                            print(a)
 //                            self.fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
 //                        }
+//                        .map(\.data)
+                        .flatMap { response -> AnyPublisher<T, APIError> in
+                            // Update the urlRequest with the new token
+                            var updatedRequest = self.urlRequest
+                            updatedRequest?.setValue(response.data.token.appToken, forHTTPHeaderField: "Authorization")
+                            
+                            guard let newRequest = updatedRequest else {
+                                return Fail(error: APIError.invalidURL("Invalid URL")).eraseToAnyPublisher()
+                            }
+                            
+                            // Retry the network request with the updated request
+                            return self.fetchURLResponse(urlRequest: newRequest, refreshToken: refreshToken)
+                        }
                         .eraseToAnyPublisher()
                 } else {
                     return Fail(error: error).eraseToAnyPublisher()
@@ -386,7 +399,7 @@ public class NetworkManager: Requestable {
         
         return URLSession.shared.dataTaskPublisher(for: request)
 //            .map(\.data)
-            .flatMap { output in
+            .tryMap { output in
                 // Print the data for debugging
 //                if let jsonData = output.data(using: .utf8) {
 //                    do {
