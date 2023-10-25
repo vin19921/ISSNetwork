@@ -176,41 +176,10 @@ public class NetworkManager: Requestable {
                                 // Update the headers with the new appToken
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
-                                
-                                return fetchURLResponse(urlRequest: requestWithNewAccessToken)
-//                                return URLSession.shared
-//                                    .dataTaskPublisher(for: requestWithNewAccessToken)
-//                                    .tryMap { output in
-//                                        return output.data
-//                                    }
-//                                    .decode(type: T.self, decoder: JSONDecoder())
-//                                    .mapError { error in
-//                                        if let apiError = error as? APIError {
-//                                            return apiError
-//                                        }
-//                                        return APIError.invalidJSON(String(describing: error.localizedDescription))
-//                                    }
-//                                    .eraseToAnyPublisher()
-                                
-                                
-//                                self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
-//                                    .sink(receiveCompletion: { completion in
-//                                        switch completion {
-//                                        case .finished:
-//                                            // Handle successful completion
-//                                            break
-//                                        case .failure(let error):
-//                                            // Handle the error here
-//                                            print("API Request Failure: \(error)")
-//                                        }
-//                                    }, receiveValue: {  (response: T) in
-//                                        // Handle the successful response here
-//                                        print("API Request Success: \(response)")
-//                                        return response.data
-//                                    })
-//                                    .store(in: &self.cancellables)
+                                let publisher: AnyPublisher<T, APIError> = self.fetchWithNewToken(urlRequest: requestWithNewAccessToken)
 
-
+                                
+                                return publisher
                             } else {
                                 // Handle the absence of the appToken
                                 return APIError.refreshTokenError("Missing appToken")
