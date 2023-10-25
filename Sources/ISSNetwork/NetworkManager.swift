@@ -381,8 +381,21 @@ public class NetworkManager: Requestable {
         
         return URLSession.shared.dataTaskPublisher(for: request)
 //            .map(\.data)
-            .tryMap { output in
+            .map { output in
+                // Print the data for debugging
                 print(output.data)
+                return output.data
+            }
+            .tryMap { data in
+                guard let response = data.response as? HTTPURLResponse else {
+                    throw APIError.invalidJSON("Invalid response")
+                }
+
+                if response.statusCode == 401 {
+                    throw APIError.invalidJSON("Unauthorized request")
+                }
+
+                return data.data
             }
             .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
             .mapError { error in
