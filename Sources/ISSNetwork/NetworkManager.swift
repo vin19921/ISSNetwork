@@ -371,7 +371,7 @@ public class NetworkManager: Requestable {
                             updatedRequest.setValue(response.data.token.appToken, forHTTPHeaderField: "x-access-token")
                             
                             guard let newRequest = updatedRequest else {
-                                return Fail(error: APIError.invalidURL("Invalid URL")).eraseToAnyPublisher()
+                                return Fail(error: APIError.badURL("Invalid URL")).eraseToAnyPublisher()
                             }
                             
                             // Retry the network request with the updated request
