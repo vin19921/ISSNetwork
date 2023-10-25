@@ -171,6 +171,8 @@ public class NetworkManager: Requestable {
                             // Handle the successful response here
                             print("Refresh Token Success: \(response)")
                             if let appToken = response.data.token.appToken {
+                                UserDefaults.standard.set(response.data.token.appToken, forKey: "accessToken")
+                                UserDefaults.standard.set(response.data.token.refreshToken, forKey: "refreshToken")
                                 // Update the headers with the new appToken
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
@@ -189,7 +191,7 @@ public class NetworkManager: Requestable {
                                         // Handle the successful response here
                                         print("API Request Success: \(response)")
                                     })
-                                    .store(in: &cancellables)
+                                    .store(in: &self.cancellables)
 
 
                             } else {
