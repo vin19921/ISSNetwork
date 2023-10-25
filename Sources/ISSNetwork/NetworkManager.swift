@@ -22,6 +22,7 @@ public class NetworkManager: Requestable {
     private let session: URLSession
     private let baseURL: String = NetworkConfiguration.environment.baseURL
     private var cancellables = Set<AnyCancellable>()
+    private var updatedURLRequest: URLRequest
 
     public required init(monitor: NetworkConnectivity = ISSNetworkGateway.createNetworkMonitor(), session: URLSession = URLSession.shared) {
         networkMonitor = monitor
@@ -329,85 +330,36 @@ public class NetworkManager: Requestable {
 //            .eraseToAnyPublisher()
 //    }
 
-//    func fetchURLResponse<T>(
-//        urlRequest: URLRequest,
-//        refreshToken: @escaping () -> AnyPublisher<RefreshTokenResponse, APIError>
-//    ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
-//        print("Request ::: \(urlRequest)")
-//        return URLSession.shared
-//            .dataTaskPublisher(for: urlRequest)
-//            .tryMap { output in
-//                guard let response = output.response as? HTTPURLResponse else {
-//                    throw APIError.invalidJSON("Invalid response")
-//                }
-//
-//                if response.statusCode == 401 {
-//                    throw APIError.authenticationError(code: 401, error: "Unauthorized request")
-//                }
-//
-//                return output.data
-//            }
-//            .decode(type: T.self, decoder: JSONDecoder())
-//            .mapError { error in
-//                if let apiError = error as? APIError {
-//                    return apiError
-//                }
-//                return APIError.invalidJSON(String(describing: error.localizedDescription))
-//            }
-//            .catch { error -> AnyPublisher<T, APIError> in
-//                if case APIError.authenticationError = error {
-//                    return refreshToken()
-//                        .flatMap { response in
-//                            var updatedRequest = urlRequest
-//                            updatedRequest.setValue(response.data.token.appToken ?? "", forHTTPHeaderField: "x-access-token")
-//                            self.fetchURLResponse(urlRequest: updatedRequest, refreshToken: refreshToken)
-//                        }
-//                        .eraseToAnyPublisher()
-//                } else {
-//                    return Fail(error: error).eraseToAnyPublisher()
-//                }
-//            }
-//            .eraseToAnyPublisher()
-//    }
-
     func fetchURLResponse<T>(
         urlRequest: URLRequest,
         refreshToken: @escaping () -> AnyPublisher<RefreshTokenResponse, APIError>
     ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
+        print("Request ::: \(urlRequest)")
         return URLSession.shared
             .dataTaskPublisher(for: urlRequest)
-            .map { output in
-                // Print the data for debugging
-                print(output.data)
+            .tryMap { output in
+                guard let response = output.response as? HTTPURLResponse else {
+                    throw APIError.invalidJSON("Invalid response")
+                }
+
+                if response.statusCode == 401 {
+                    throw APIError.authenticationError(code: 401, error: "Unauthorized request")
+                }
+
                 return output.data
             }
-            .tryMap { (data, response) -> Data in
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    throw APIError.invalidResponse("Invalid response")
-                }
-
-                if httpResponse.statusCode == 401 {
-                    throw APIError.authenticationError("Authentication error")
-                }
-
-                return data
-            }
             .decode(type: T.self, decoder: JSONDecoder())
-            .mapError { error -> APIError in
+            .mapError { error in
                 if let apiError = error as? APIError {
                     return apiError
                 }
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
             }
-            .catch { (error: APIError) -> AnyPublisher<T, APIError> in
+            .catch { error -> AnyPublisher<T, APIError> in
                 if case APIError.authenticationError = error {
                     return refreshToken()
-                        .flatMap { response in
-                            // Update the URL request with the new token
-                            var updatedRequest = urlRequest
-                            updatedRequest.setValue(response.data.token.appToken ?? "", forHTTPHeaderField: "x-access-token")
-                            
-                            return fetchURLResponse(urlRequest: updatedRequest, refreshToken: refreshToken)
+                        .flatMap { _ in
+                            self.fetchURLResponse(urlRequest: updatedURLRequest, refreshToken: refreshToken)
                         }
                         .eraseToAnyPublisher()
                 } else {
@@ -436,6 +388,15 @@ public class NetworkManager: Requestable {
                 do {
                     let jsonData = String(data: output.data, encoding: .utf8)
                     print("jsonResponse ::: \n\(jsonData)")
+                    let tokenData = try JSONDecoder().decode(TokenDataModel.self, from: jsonData)
+                        
+                    // Access the appToken and refreshToken
+                    let appToken = tokenData.token.appToken
+                    let refreshToken = tokenData.token.refreshToken
+                    print("appToken ::: \(appToken)")
+                    print("refreshToken ::: \(refreshToken)")
+                    updatedURLRequest = urlRequest
+                    updatedURLRequest.setValue(appToken, forHTTPHeaderField: "x-access-token")
 
                 } catch {
                     print("Error decoding JSON: \(error)")
