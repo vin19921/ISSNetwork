@@ -370,12 +370,12 @@ public class NetworkManager: Requestable {
     func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
         let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") as? String ?? ""
         
-        guard let refreshTokenURL = URL(string: NetworkConfiguration.APIEndpoint.refreshToken.path) else {
+        guard let refreshTokenURL = URL(string: baseURL + NetworkConfiguration.APIEndpoint.refreshToken.path) else {
             return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Invalid refresh token URL"))
                 .eraseToAnyPublisher()
         }
         
-        var request = URLRequest(url: refreshTokenURL)
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
         
