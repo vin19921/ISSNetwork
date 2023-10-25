@@ -357,7 +357,7 @@ public class NetworkManager: Requestable {
                 }
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
             }
-            .catch { error -> AnyPublisher<T, APIError> in
+            .catch { (error: Error) -> AnyPublisher<T, APIError> in
                 if case APIError.authenticationError = error {
                     return refreshToken()
                         .flatMap { _ in
