@@ -177,27 +177,42 @@ public class NetworkManager: Requestable {
                                 var requestWithNewAccessToken = urlRequest
                                 requestWithNewAccessToken.allHTTPHeaderFields?.updateValue(appToken, forKey: "x-access-token")
                                 
-                                self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
-                                    .sink(receiveCompletion: { completion in
-                                        switch completion {
-                                        case .finished:
-                                            // Handle successful completion
-                                            break
-                                        case .failure(let error):
-                                            // Handle the error here
-                                            print("API Request Failure: \(error)")
+                                return URLSession.shared
+                                    .dataTaskPublisher(for: urlRequest)
+                                    .tryMap { output in
+                                        return output.data
+                                    }
+                                    .decode(type: T.self, decoder: JSONDecoder())
+                                    .mapError { error in
+                                        if let apiError = error as? APIError {
+                                            return apiError
                                         }
-                                    }, receiveValue: {  (response: T) in
-                                        // Handle the successful response here
-                                        print("API Request Success: \(response)")
-                                        return response.data
-                                    })
-                                    .store(in: &self.cancellables)
+                                        return APIError.invalidJSON(String(describing: error.localizedDescription))
+                                    }
+                                    .eraseToAnyPublisher()
+                                
+                                
+//                                self.fetchURLResponse(urlRequest: requestWithNewAccessToken)
+//                                    .sink(receiveCompletion: { completion in
+//                                        switch completion {
+//                                        case .finished:
+//                                            // Handle successful completion
+//                                            break
+//                                        case .failure(let error):
+//                                            // Handle the error here
+//                                            print("API Request Failure: \(error)")
+//                                        }
+//                                    }, receiveValue: {  (response: T) in
+//                                        // Handle the successful response here
+//                                        print("API Request Success: \(response)")
+//                                        return response.data
+//                                    })
+//                                    .store(in: &self.cancellables)
 
 
                             } else {
                                 // Handle the absence of the appToken
-//                                throw APIError.refreshTokenError("Missing appToken")
+                                return APIError.refreshTokenError("Missing appToken")
                             }
                         })
                         .store(in: &self.cancellables)
