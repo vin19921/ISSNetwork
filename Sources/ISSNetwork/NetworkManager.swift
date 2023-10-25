@@ -335,36 +335,40 @@ public class NetworkManager: Requestable {
     ) -> AnyPublisher<T, APIError> where T: Decodable, T: Encodable {
         print("Request ::: \(urlRequest)")
 
-        return URLSession.shared
-            .dataTaskPublisher(for: urlRequest)
+        let publisher: AnyPublisher<T, APIError> = URLSession.shared.dataTaskPublisher(for: urlRequest)
             .tryMap { output in
                 if let response = output.response as? HTTPURLResponse, response.statusCode == 401 {
-                    return refreshToken()
-                        .flatMap { _ in
-                            URLSession.shared.dataTaskPublisher(for: urlRequest)
-                                .tryMap { refreshedOutput in
-                                    return refreshedOutput.data
-                                }
-                                .mapError { error in
-                                    if let apiError = error as? APIError {
-                                        return apiError
-                                    }
-                                    return APIError.invalidJSON(String(describing: error.localizedDescription))
-                                }
-                        }
-                } else {
-                    return Just(output.data)
-                        .setFailureType(to: APIError.self)
-                        .eraseToAnyPublisher()
+                    throw APIError.refreshTokenError("Token refresh needed")
                 }
+                return output.data
             }
-            .switchToLatest() // Flatten the inner publisher
+            .mapError { error in
+                if let apiError = error as? APIError {
+                    return apiError
+                }
+                return APIError.invalidJSON(String(describing: error.localizedDescription))
+            }
             .decode(type: T.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
                     return apiError
                 }
                 return APIError.invalidJSON(String(describing: error.localizedDescription))
+            }
+            .eraseToAnyPublisher()
+
+        return publisher
+            .catch { error in
+                if case APIError.refreshTokenError = error {
+                    // If a token refresh is needed, trigger the refresh and retry the request
+                    return refreshToken()
+                        .flatMap { _ in
+                            fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
+                        }
+                        .eraseToAnyPublisher()
+                } else {
+                    return Fail<T, APIError>(error: error).eraseToAnyPublisher()
+                }
             }
             .eraseToAnyPublisher()
     }
