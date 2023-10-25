@@ -357,9 +357,10 @@ public class NetworkManager: Requestable {
             .catch { error -> AnyPublisher<T, APIError> in
                 if case APIError.authenticationError = error {
                     return refreshToken()
-                        .tryMap { response in
-                            print(response.data.token.appToken)
-                            self.fetchURLResponse(urlRequest: urlRequest, refreshToken: refreshToken)
+                        .flatMap { response in
+                            var updatedRequest = urlRequest
+                            updatedRequest.setValue(response.data.token.appToken ?? "", forHTTPHeaderField: "x-access-token")
+                            self.fetchURLResponse(urlRequest: updatedRequest, refreshToken: refreshToken)
                         }
                         .eraseToAnyPublisher()
                 } else {
