@@ -367,12 +367,14 @@ public class NetworkManager: Requestable {
 //                        .map(\.data)
                         .flatMap { response -> AnyPublisher<T, APIError> in
                             // Update the urlRequest with the new token
+                            let appToken = response.data.token.appToken ?? ""
+                            let refreshToken = response.data.token.refreshToken ?? ""
+                            UserDefaults.standard.set(appToken, forKey: "accessToken")
+                            UserDefaults.standard.set(refreshToken, forKey: "refreshToken")
+                            print("appToken ::: \(appToken)")
+                            print("refreshToken ::: \(refreshToken)")
                             var updatedRequest = urlRequest
-                            updatedRequest.setValue(response.data.token.appToken, forHTTPHeaderField: "x-access-token")
-                            
-//                            guard let newRequest = updatedRequest else {
-//                                return Fail(error: APIError.badURL("Invalid URL")).eraseToAnyPublisher()
-//                            }
+                            updatedRequest.setValue(appToken, forHTTPHeaderField: "x-access-token")
                             
                             // Retry the network request with the updated request
                             return self.fetchURLResponse(urlRequest: updatedRequest, refreshToken: refreshToken)
