@@ -93,10 +93,11 @@ public class NetworkManager: Requestable {
     }
 
     func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
-        guard let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") as? String else {
-            return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Refresh Token Not Found"))
-                .eraseToAnyPublisher()
-        }
+//        guard let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") as? String else {
+//            return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Refresh Token Not Found"))
+//                .eraseToAnyPublisher()
+//        }
+        let refreshToken = "ABC"
 
         guard let refreshTokenURL = URL(string: baseURL + NetworkConfiguration.APIEndpoint.refreshToken.path) else {
             return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Invalid refresh token URL"))
