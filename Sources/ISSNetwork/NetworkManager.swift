@@ -111,7 +111,7 @@ public class NetworkManager: Requestable {
 //        var request = URLRequest(url: refreshTokenURL)
 //        request.httpMethod = NetworkConfiguration.APIEndpoint.refreshToken.httpMethod
 //        request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
-        print("Request ::: \(request)")
+        print("Request ::: \(req)")
 
         return URLSession.shared.dataTaskPublisher(for: req.buildURLRequest(with: refreshTokenURL))
 //        return sentRequest
