@@ -103,7 +103,7 @@ public class NetworkManager: Requestable {
                 .eraseToAnyPublisher()
         }
 
-        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
+        let req = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
                                      headers: ["x-access-token": "\(refreshToken)"],
                                      httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
 //        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = networkRequest.request(request)
@@ -113,7 +113,7 @@ public class NetworkManager: Requestable {
 //        request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
         print("Request ::: \(request)")
 
-        return URLSession.shared.dataTaskPublisher(for: request)
+        return URLSession.shared.dataTaskPublisher(for: req.buildURLRequest(with: refreshTokenURL))
 //        return sentRequest
             .tryMap { output in
                 guard let response = output.response as? HTTPURLResponse else {
