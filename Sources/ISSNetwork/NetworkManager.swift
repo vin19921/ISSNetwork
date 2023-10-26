@@ -139,6 +139,8 @@ public class NetworkManager: Requestable {
                     case .refreshTokenError:
                         print("")
                         NotificationCenter.default.post(name: Notification.Name("refreshTokenErrorNotification"), object: nil)
+                    default:
+                        break
                     }
                     return apiError
                 }
