@@ -103,12 +103,18 @@ public class NetworkManager: Requestable {
                 .eraseToAnyPublisher()
         }
 
-        var request = URLRequest(url: refreshTokenURL)
-        request.httpMethod = NetworkConfiguration.APIEndpoint.refreshToken.httpMethod
-        request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
+        let request = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
+                                     headers: ["x-access-token": "\(refreshToken)"],
+                                     httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
+//        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = networkRequest.request(request)
+
+//        var request = URLRequest(url: refreshTokenURL)
+//        request.httpMethod = NetworkConfiguration.APIEndpoint.refreshToken.httpMethod
+//        request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
         print("Request ::: \(request)")
 
         return URLSession.shared.dataTaskPublisher(for: request)
+//        return sentRequest
             .tryMap { output in
                 guard let response = output.response as? HTTPURLResponse else {
                     throw APIError.invalidJSON("Invalid response")
