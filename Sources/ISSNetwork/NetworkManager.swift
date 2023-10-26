@@ -94,19 +94,20 @@ public class NetworkManager: Requestable {
 
     func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
         guard let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") as? String else {
-            throw APIError.refreshTokenError("refreshToken Not Found")
+            return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Refresh Token Not Found"))
+                .eraseToAnyPublisher()
         }
-        
+
         guard let refreshTokenURL = URL(string: baseURL + NetworkConfiguration.APIEndpoint.refreshToken.path) else {
             return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Invalid refresh token URL"))
                 .eraseToAnyPublisher()
         }
-        
+
         var request = URLRequest(url: refreshTokenURL)
-        request.httpMethod = "POST"
+        request.httpMethod = NetworkConfiguration.APIEndpoint.refreshToken.httpMethod
         request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
         print("Request ::: \(request)")
-        
+
         return URLSession.shared.dataTaskPublisher(for: request)
             .tryMap { output in
                 guard let response = output.response as? HTTPURLResponse else {
