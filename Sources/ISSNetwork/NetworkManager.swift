@@ -93,11 +93,10 @@ public class NetworkManager: Requestable {
     }
 
     func refreshToken() -> AnyPublisher<RefreshTokenResponse, APIError> {
-//        guard let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") as? String else {
-//            return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Refresh Token Not Found"))
-//                .eraseToAnyPublisher()
-//        }
-        let refreshToken = "ABC"
+        guard let refreshToken = UserDefaults.standard.object(forKey: "refreshToken") as? String else {
+            return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Refresh Token Not Found"))
+                .eraseToAnyPublisher()
+        }
 
         guard let refreshTokenURL = URL(string: baseURL + NetworkConfiguration.APIEndpoint.refreshToken.path) else {
             return Fail<RefreshTokenResponse, APIError>(error: APIError.refreshTokenError("Invalid refresh token URL"))
@@ -107,11 +106,6 @@ public class NetworkManager: Requestable {
         let req = NetworkRequest(url: NetworkConfiguration.APIEndpoint.refreshToken.path,
                                      headers: ["x-access-token": "\(refreshToken)"],
                                      httpMethod: NetworkConfiguration.APIEndpoint.refreshToken.httpMethod)
-//        let sentRequest: AnyPublisher<RefreshTokenResponse, APIError> = networkRequest.request(request)
-
-//        var request = URLRequest(url: refreshTokenURL)
-//        request.httpMethod = NetworkConfiguration.APIEndpoint.refreshToken.httpMethod
-//        request.setValue("\(refreshToken)", forHTTPHeaderField: "x-access-token")
         print("Request ::: \(req)")
 
         return URLSession.shared.dataTaskPublisher(for: req.buildURLRequest(with: refreshTokenURL))
@@ -137,7 +131,6 @@ public class NetworkManager: Requestable {
                 if let apiError = error as? APIError {
                     switch apiError {
                     case .refreshTokenError:
-                        print("")
                         NotificationCenter.default.post(name: Notification.Name("refreshTokenErrorNotification"), object: nil)
                     default:
                         break
