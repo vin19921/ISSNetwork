@@ -136,9 +136,11 @@ public class NetworkManager: Requestable {
             .decode(type: RefreshTokenResponse.self, decoder: JSONDecoder())
             .mapError { error in
                 if let apiError = error as? APIError {
-//                    switch apiError {
-//                    case .refreshTokenError:
-//                    }
+                    switch apiError {
+                    case .refreshTokenError:
+                        let refreshTokenRouter = RefreshTokenRouter()
+                        refreshTokenRouter.navigateToLoginScreen()
+                    }
                     return apiError
                 }
                 return APIError.refreshTokenError("Token refresh failed")
