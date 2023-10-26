@@ -115,7 +115,6 @@ public class NetworkManager: Requestable {
         print("Request ::: \(req)")
 
         return URLSession.shared.dataTaskPublisher(for: req.buildURLRequest(with: refreshTokenURL))
-//        return sentRequest
             .tryMap { output in
                 guard let response = output.response as? HTTPURLResponse else {
                     throw APIError.invalidJSON("Invalid response")
@@ -138,8 +137,8 @@ public class NetworkManager: Requestable {
                 if let apiError = error as? APIError {
                     switch apiError {
                     case .refreshTokenError:
-                        let refreshTokenRouter = RefreshTokenRouter()
-                        refreshTokenRouter.navigateToLoginScreen()
+                        print("")
+                        NotificationCenter.default.post(name: Notification.Name("refreshTokenErrorNotification"), object: nil)
                     }
                     return apiError
                 }
