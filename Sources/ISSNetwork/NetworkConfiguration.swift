@@ -31,6 +31,7 @@ public struct NetworkConfiguration {
         case validateResetPasswordOTP
         case login
         case viewProfile
+        case updateProfile
         case refreshToken
         case getUser(userID: Int)
 
@@ -47,6 +48,8 @@ public struct NetworkConfiguration {
             case .login:
                 return "/auth/login"
             case .viewProfile:
+                return "/user/profile"
+            case .updateProfile:
                 return "/user/profile"
             case .refreshToken:
                 return "/auth/refreshToken"
@@ -69,6 +72,8 @@ public struct NetworkConfiguration {
                 return .POST
             case .viewProfile:
                 return .POST
+            case .updateProfile:
+                return .PUT
             case .refreshToken:
                 return .POST
             case .getUser:
