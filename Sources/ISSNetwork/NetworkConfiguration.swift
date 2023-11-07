@@ -33,6 +33,7 @@ public struct NetworkConfiguration {
         case viewProfile
         case updateProfile
         case refreshToken
+        case changePassword
         case getUser(userID: Int)
 
         public var path: String {
@@ -53,6 +54,8 @@ public struct NetworkConfiguration {
                 return "/user/profile"
             case .refreshToken:
                 return "/auth/refreshToken"
+            case .changePassword:
+                return "/auth/changePassword"
             case .getUser(let userID):
                 return "/user/\(userID)"
             }
@@ -75,6 +78,8 @@ public struct NetworkConfiguration {
             case .updateProfile:
                 return .PUT
             case .refreshToken:
+                return .POST
+            case .changePassword:
                 return .POST
             case .getUser:
                 return .GET
