@@ -80,7 +80,7 @@ public struct NetworkConfiguration {
             case .refreshToken:
                 return .POST
             case .changePassword:
-                return .POST
+                return .PUT
             case .getUser:
                 return .GET
             }
