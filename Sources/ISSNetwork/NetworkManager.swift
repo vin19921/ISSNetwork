@@ -58,6 +58,14 @@ public class NetworkManager: Requestable {
                     throw APIError.authenticationError(code: 401, error: "Unauthorized request")
                 }
 
+                do {
+                    let jsonData = String(data: output.data, encoding: .utf8)
+                    print("jsonResponse ::: \n\(jsonData)")
+
+                } catch {
+                    print("Error decoding JSON: \(error)")
+                }
+
                 return output.data
             }
             .decode(type: T.self, decoder: JSONDecoder())
