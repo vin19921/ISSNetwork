@@ -87,7 +87,7 @@ public struct NetworkConfiguration {
             case .getUser:
                 return .GET
             case .taskList:
-                return .GET
+                return .POST
             }
         }
     }
