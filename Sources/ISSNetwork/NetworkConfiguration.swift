@@ -92,7 +92,7 @@ public struct NetworkConfiguration {
             case .taskList:
                 return .POST
             case .categoryList:
-                return .GET
+                return .POST
             }
         }
     }
