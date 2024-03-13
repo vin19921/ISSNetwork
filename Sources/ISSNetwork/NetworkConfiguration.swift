@@ -36,6 +36,7 @@ public struct NetworkConfiguration {
         case changePassword
         case taskList
         case categoryList
+        case confirmTask
         case getUser(userID: Int)
 
         public var path: String {
@@ -62,6 +63,8 @@ public struct NetworkConfiguration {
                 return "/task/list"
             case .categoryList:
                 return "/category/list"
+            case .confirmTask:
+                return "/task/occupy"
             case .getUser(let userID):
                 return "/user/\(userID)"
             }
@@ -92,6 +95,8 @@ public struct NetworkConfiguration {
             case .taskList:
                 return .POST
             case .categoryList:
+                return .POST
+            case .confirmTask:
                 return .POST
             }
         }
