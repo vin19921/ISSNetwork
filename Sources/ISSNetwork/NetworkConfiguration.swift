@@ -41,6 +41,7 @@ public struct NetworkConfiguration {
         case remoteConfig
         case timeFrameList
         case createSchedule
+        case getScheduleList
         case getUser(userID: Int)
 
         public var path: String {
@@ -77,6 +78,8 @@ public struct NetworkConfiguration {
                 return "/timeFrame/list"
             case .createSchedule:
                 return "/schedule/create"
+            case .getScheduleList:
+                return "/schedule/list"
             case .getUser(let userID):
                 return "/user/\(userID)"
             }
@@ -117,6 +120,8 @@ public struct NetworkConfiguration {
             case .timeFrameList:
                 return .POST
             case .createSchedule:
+                return .POST
+            case .getScheduleList:
                 return .POST
             }
         }
