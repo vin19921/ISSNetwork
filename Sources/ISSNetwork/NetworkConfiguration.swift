@@ -1,8 +1,8 @@
 //
-//  File.swift
-//  
+//  NetworkConfiguration.swift
 //
-//  Created by Wing Seng Chew on 21/09/2023.
+//
+//  Copyright by iSoftStone 2024.
 //
 
 import Foundation
@@ -42,7 +42,6 @@ public struct NetworkConfiguration {
         case timeFrameList
         case createSchedule
         case getScheduleList
-        case getUser(userID: Int)
 
         public var path: String {
             switch self {
@@ -80,8 +79,6 @@ public struct NetworkConfiguration {
                 return "/schedule/create"
             case .getScheduleList:
                 return "/schedule/list"
-            case .getUser(let userID):
-                return "/user/\(userID)"
             }
         }
 
@@ -105,8 +102,6 @@ public struct NetworkConfiguration {
                 return .POST
             case .changePassword:
                 return .PUT
-            case .getUser:
-                return .GET
             case .taskList:
                 return .POST
             case .categoryList:

@@ -2,7 +2,7 @@
 //  NetworkRequest.swift
 //  
 //
-//  Copyright by iSoftStone 2023.
+//  Copyright by iSoftStone 2024.
 //
 
 import Foundation
@@ -80,15 +80,6 @@ public extension Encodable {
     }
 }
 
-//public struct RequestBody: Encodable {
-//    let key: String
-//    let value: String
-//
-//    public init(key: String, value: String) {
-//        self.key = key
-//        self.value = value
-//    }
-//}
 public struct RequestBody {
     public let keyValues: [(key: String, value: String)]
 

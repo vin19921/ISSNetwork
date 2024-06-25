@@ -1,8 +1,8 @@
 //
-//  File.swift
-//  
+//  RefreshTokenDataModel.swift
 //
-//  Created by Wing Seng Chew on 19/10/2023.
+//
+//  Copyright by iSoftStone 2024.
 //
 
 public struct TokenDataModel: Codable {

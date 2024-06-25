@@ -1,8 +1,8 @@
 //
-//  File.swift
-//  
+//  RefreshTokenRoutingLogic.swift
 //
-//  Created by Wing Seng Chew on 26/10/2023.
+//
+//  Copyright by iSoftStone 2024.
 //
 
 public protocol RefreshTokenRoutingLogic {
