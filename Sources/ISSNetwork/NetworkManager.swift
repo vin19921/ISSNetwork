@@ -84,8 +84,7 @@ public class NetworkManager: Requestable {
                             let newRefreshToken = response.data.token.refreshToken ?? ""
                             UserDefaults.standard.set(newAppToken, forKey: "accessToken")
                             UserDefaults.standard.set(newRefreshToken, forKey: "refreshToken")
-//                            print("appToken ::: \(newAppToken)")
-//                            print("refreshToken ::: \(newRefreshToken)")
+
                             var updatedRequest = urlRequest
                             updatedRequest.setValue(newAppToken, forHTTPHeaderField: "x-access-token")
                             
