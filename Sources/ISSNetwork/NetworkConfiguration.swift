@@ -42,6 +42,7 @@ public struct NetworkConfiguration {
         case timeFrameList
         case createSchedule
         case getScheduleList
+        case updateAvailability
 
         public var path: String {
             switch self {
@@ -79,6 +80,8 @@ public struct NetworkConfiguration {
                 return "/schedule/create"
             case .getScheduleList:
                 return "/schedule/list"
+            case .updateAvailability:
+                return "schedule/update/edit"
             }
         }
 
@@ -117,6 +120,8 @@ public struct NetworkConfiguration {
             case .createSchedule:
                 return .POST
             case .getScheduleList:
+                return .POST
+            case .updateAvailability:
                 return .POST
             }
         }
